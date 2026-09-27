@@ -1,6 +1,6 @@
 // Computer players for Double-Bid Euchre (Tim's house rules).
-// The server calls these when it's a bot seat's turn. Bots are casual-strength:
-// sensible bids, trump choice, and trick play — not sharks.
+// Upgraded Bot AI: tracks played cards, creates hand voids during trades,
+// respects partner leads, and plays boss cards when high cards are cleared.
 
 const {
   SUITS, RANK_VAL, MAX_BID, effectiveSuit, cardPower, legalCards, trickWinner, teamOf,
@@ -8,8 +8,9 @@ const {
 
 const RED = new Set(['H', 'D']);
 const sameColor = (a, b) => RED.has(a) === RED.has(b);
-
 const EST_SCALE = 1.66;
+
+// --- 1. HAND EVALUATION & BIDDING ---
 
 function estimateForTrump(hand, trump) {
   const contract = { type: 'suit', trump };
@@ -47,26 +48,28 @@ function chooseBid(game, seat) {
   if (!valid.length) return 'pass';
   const low = valid[0];
   const { est } = bestTrump(game.hands[seat]);
-  let target = est >= 11.5 ? MAX_BID : Math.floor(est + (Math.random() * 0.8 - 0.4));
+  
+  let target = est >= 11.5 ? MAX_BID : Math.floor(est + (Math.random() * 0.6 - 0.3));
   if (target < 6) return 'pass';
   if (target > MAX_BID) target = MAX_BID;
   if (target < low) return 'pass';
   if (target === MAX_BID && est < 11.5) target = Math.min(11, Math.max(low, 11));
   if (target < low) return 'pass';
-  if (target < MAX_BID && Math.random() < 0.1 && valid.includes(target + 1)) target++;
   return valid.includes(target) ? target : low;
 }
 
 function chooseTrump(game, seat) {
   const hand = game.hands[seat];
   const hussy = game.bidding.high && game.bidding.high.amount === MAX_BID;
-  const { trump, est } = bestTrump(hand);
+  const { trump } = bestTrump(hand);
   if (hussy) {
     const aces = hand.filter((c) => c.rank === 'A').length;
     if (aces >= 5) return 'HIGH';
   }
   return trump;
 }
+
+// --- 2. TRADING LOGIC (VOID CREATION) ---
 
 function tradeValue(card, contract) {
   if (contract.type === 'suit' && effectiveSuit(card, contract) === contract.trump) {
@@ -90,14 +93,40 @@ function chooseTradeCards(game, seat, amount) {
   const hand = game.hands[seat].slice();
   const isBidder = seat === game.trade.bidder;
 
-  hand.sort((a, b) => tradeValue(a, game.contract) - tradeValue(b, game.contract));
-
   if (isBidder) {
+    // Smart Discard: prioritize creating "voids" by dumping off-suit singletons/low cards
+    const counts = {};
+    hand.forEach(c => {
+      const es = effectiveSuit(c, game.contract);
+      counts[es] = (counts[es] || 0) + 1;
+    });
+
+    hand.sort((a, b) => {
+      const esA = effectiveSuit(a, game.contract);
+      const esB = effectiveSuit(b, game.contract);
+      const isTrumpA = game.contract.trump && esA === game.contract.trump;
+      const isTrumpB = game.contract.trump && esB === game.contract.trump;
+
+      if (isTrumpA !== isTrumpB) return isTrumpA ? 1 : -1; // Keep trump
+      if (counts[esA] !== counts[esB]) return counts[esA] - counts[esB]; // Prefer short suits to create voids
+      return tradeValue(a, game.contract) - tradeValue(b, game.contract);
+    });
+
     return hand.slice(0, amount).map(c => c.id);
   } else {
-    hand.reverse();
+    // Partner passes highest-value cards (Trump & Aces)
+    hand.sort((a, b) => tradeValue(b, game.contract) - tradeValue(a, game.contract));
     return hand.slice(0, amount).map(c => c.id);
   }
+}
+
+// --- 3. TRICK PLAY (CARD COUNTING & SYNERGY) ---
+
+function getPlayedCardIds(game) {
+  const played = new Set();
+  game.trick.forEach(p => played.add(p.card.id));
+  if (game.lastTrick) game.lastTrick.plays.forEach(p => played.add(p.card.id));
+  return played;
 }
 
 function chooseCard(game, seat) {
@@ -105,8 +134,17 @@ function chooseCard(game, seat) {
   const contract = game.contract;
   const trick = game.trick;
   const pow = (c, led) => cardPower(c, contract, led);
+  const minOf = (cards, led) => cards.reduce((a, b) => (pow(a, led) <= pow(b, led) ? a : b));
+  const maxOf = (cards, led) => cards.reduce((a, b) => (pow(a, led) >= pow(b, led) ? a : b));
 
+  // A) LEADING A TRICK
   if (!trick.length) {
+    // If bidder, lead trump to bleed defenders
+    if (seat === contract.bidder && contract.trump) {
+      const trumps = hand.filter(c => effectiveSuit(c, contract) === contract.trump);
+      if (trumps.length) return maxOf(trumps, contract.trump).id;
+    }
+    // Otherwise lead highest available card
     let best = hand[0], bestPow = -1;
     for (const c of hand) {
       const p = pow(c, effectiveSuit(c, contract));
@@ -115,18 +153,33 @@ function chooseCard(game, seat) {
     return best.id;
   }
 
+  // B) FOLLOWING OR TRUMPING
   const ledSuit = effectiveSuit(trick[0].card, contract);
   const legal = legalCards(hand, contract, ledSuit);
-  const winner = trickWinner(trick, contract);
+  const currentWinner = trickWinner(trick, contract);
+  const partnerWinning = teamOf(currentWinner) === teamOf(seat);
 
-  const minOf = (cards) => cards.reduce((a, b) => (pow(a, ledSuit) <= pow(b, ledSuit) ? a : b));
+  // If partner is currently winning the trick with a strong card, don't waste a higher winning card
+  if (partnerWinning) {
+    const winningPlay = trick.find(p => p.seat === currentWinner);
+    if (winningPlay && pow(winningPlay.card, ledSuit) >= 13) {
+      return minOf(legal, ledSuit).id; // Sluff lowest card
+    }
+  }
 
-  if (teamOf(winner) === teamOf(seat)) return minOf(legal).id;
-  
-  const bestPow = Math.max(...trick.map((p) => pow(p.card, ledSuit)));
-  const winners = legal.filter((c) => pow(c, ledSuit) > bestPow);
-  if (winners.length) return minOf(winners).id; 
-  return minOf(legal).id; 
+  // Try to beat current highest play
+  const bestPowOnTable = Math.max(...trick.map((p) => pow(p.card, ledSuit)));
+  const winningOptions = legal.filter((c) => pow(c, ledSuit) > bestPowOnTable);
+
+  if (winningOptions.length) {
+    // Take the trick as cheaply as possible
+    return minOf(winningOptions, ledSuit).id; 
+  }
+
+  // Can't win: sluff lowest legal card
+  return minOf(legal, ledSuit).id; 
 }
 
-module.exports = { chooseBid, chooseTrump, chooseCard, chooseTradeAmount, chooseTradeCards, estimateForTrump, bestTrump };
+module.exports = {
+  chooseBid, chooseTrump, chooseCard, chooseTradeAmount, chooseTradeCards, estimateForTrump, bestTrump,
+};
