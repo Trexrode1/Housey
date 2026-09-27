@@ -163,9 +163,11 @@ countLowCards(seat) {
       this.turn = this.bidding.high.seat;
       this.message = `${this.names[this.turn]} won the bid — name trump`;
     } else if (!this.bidding.high && this.bidding.passes >= 4) {
-      this.dealer = (this.dealer + 1) % 4;
-      this.startHand();
-      this.message = 'Everyone passed — redeal';
+  this.bidding.high = { seat: this.bidding.turn, amount: MIN_BID };
+  this.phase = 'naming';
+  this.turn = this.bidding.turn;
+  this.message = `${this.names[this.turn]} was stuck with the bid (${MIN_BID})! Name trump`;
+}
     } else {
       this.bidding.turn = (this.bidding.turn + 1) % 4;
       this.turn = this.bidding.turn;
