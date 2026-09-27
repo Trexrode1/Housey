@@ -80,7 +80,9 @@ function pumpBots(room) {
     clearTimeout(room.botTimer);
     room.botTimer = null;
   }
-  if (room.trickTimer) return; // Don't let bots play while trick resolution pause is active
+  const g = room.game;
+  if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
+  if (g.trick.length === 4) return; // Stop bots while 4 cards are sitting on the table
   const g = room.game;
   if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
   let seat = -1;
@@ -228,28 +230,21 @@ function onMessage(ws, raw) {
         break;
       }
       case 'play': {
-     if (!room || !room.game) return err(ws, 'No game');
-     if (room.trickTimer) return; // Prevent playing during trick resolution pause
-     const seat = seatOf(room, ws);
-     const trickFinished = room.game.trick.length === 3; // 4th card being played
+        if (!room || !room.game) return err(ws, 'No game');
+        const seat = seatOf(room, ws);
+        room.game.play(seat, String(m.card));
+        broadcast(room);
 
-     room.game.play(seat, String(m.card));
-
-     if (trickFinished && room.game.phase === 'playing') {
-       // Send state with all 4 cards visible on table
-       broadcast(room);
-
-       // Pause for 3 seconds before clearing trick and giving turn to winner
-       room.trickTimer = setTimeout(() => {
-         room.trickTimer = null;
-         room.game.resolveTrick();
-         broadcast(room);
-       }, 3000);
-     } else {
-       broadcast(room);
-     }
-     break;
-   }
+        if (room.game.trick.length === 4) {
+          setTimeout(() => {
+            if (room.game) {
+              room.game.clearTrick();
+              broadcast(room);
+            }
+          }, 3000);
+        }
+        break;
+      }
       case 'next': {
         if (!room || !room.game) return err(ws, 'No game');
         try {
