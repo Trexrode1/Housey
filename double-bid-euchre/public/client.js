@@ -164,8 +164,9 @@ function contractLine(g) {
   const c = g.contract;
   if (!c) return '';
   const trumpTxt = c.type === 'high' ? 'High (no trump)' : `${GLYPH[c.trump]} trump`;
+  const label = c.bigHousey ? 'BIG HOUSEY' : (c.hussy ? 'HOUSEY' : '');
   const need = c.hussy
-    ? `<span class="hussy">HOUSEY by ${escapeHtml(c.bidderName)} — must take all 12</span>`
+    ? `<span class="hussy">${label} by ${escapeHtml(c.bidderName)} · ${trumpTxt}</span>`
     : `${escapeHtml(c.bidderName)} bid ${c.amount} · ${trumpTxt}`;
   const us = g.tricksWon[mySeat % 2], them = g.tricksWon[1 - (mySeat % 2)];
   return `${need}<br>Us ${us} – Them ${them}`;
