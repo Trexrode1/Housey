@@ -196,3 +196,12 @@ button:disabled { opacity: .4; }
   margin: 2px 0;
   text-transform: uppercase;
 }
+/* Shift played card inside left seat inward toward center */
+.seat.left .played {
+  margin-left: 100px;
+}
+
+/* Shift played card inside right seat inward toward center */
+.seat.right .played {
+  margin-right: 100px;
+}
