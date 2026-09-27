@@ -201,18 +201,22 @@ class Game {
 
     if (this.trick.length === 4) {
       const w = trickWinner(this.trick, this.contract);
-      this.tricksWon[teamOf(w)]++;
-      this.lastTrick = { plays: this.trick, winner: w };
-      this.trick = [];
-      this.leader = w;
-      this.turn = w;
       this.message = `${this.names[w]} takes the trick`;
-      if (this.hands[0].length === 0) this.finishHand();
     } else {
       this.turn = (this.turn + 1) % 4;
     }
   }
 
+  resolveTrick() {
+    if (this.trick.length !== 4) return;
+    const w = trickWinner(this.trick, this.contract);
+    this.tricksWon[teamOf(w)]++;
+    this.lastTrick = { plays: this.trick, winner: w };
+    this.trick = [];
+    this.leader = w;
+    this.turn = w;
+    if (this.hands[0].length === 0) this.finishHand();
+  }
   finishHand() {
     const b = this.contract.bidder;
     const makers = teamOf(b), defenders = 1 - makers;
