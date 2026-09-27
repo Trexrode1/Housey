@@ -209,6 +209,9 @@ function renderActionBar(g) {
   let h = '';
   if (g.phase === 'bidding' && g.turn === mySeat) {
     h += `<div class="title">Your bid</div>`;
+    if (g.canRedeal) {
+      h += `<button class="hussybtn" data-act="redeal" style="background:#d97706; margin-bottom:8px; width:100%">Redeal Hand (${g.lowCardCount} Nines & Tens)</button><br>`;
+    }
     h += `<div class="cur">${g.bid ? `Current: ${g.bid.amount} by${escapeHtml(g.bid.by)}` : 'No bids yet — minimum 6'}</div>`;
     g.validBids.forEach((b) => {
       h += b === 12
@@ -294,6 +297,7 @@ $('actionbar').addEventListener('click', (e) => {
   const act = b.dataset.act;
   if (act === 'bid') send({ t: 'bid', amount: Number(b.dataset.v) });
   else if (act === 'pass') send({ t: 'pass' });
+    else if (act === 'redeal') send({ t: 'redeal' });
   else if (act === 'trump') send({ t: 'trump', trump: b.dataset.v });
   else if (act === 'trade_amt') { send({ t: 'trade_amount', amount: Number(b.dataset.v) }); selectedCards = []; }
   else if (act === 'trade_cards') { send({ t: 'trade_cards', cards: selectedCards }); selectedCards = []; }
