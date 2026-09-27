@@ -35,11 +35,10 @@ function shuffle(deck, rand = Math.random) {
   return deck;
 }
 
-// contract: { type: 'suit'|'high', trump: 'S'|'H'|'D'|'C'|null }
 function effectiveSuit(card, contract) {
   if (contract && contract.type === 'suit' && card.rank === 'J') {
-    if (card.suit === contract.trump) return contract.trump; // right bower
-    if (sameColor(card.suit, contract.trump)) return contract.trump; // left bower
+    if (card.suit === contract.trump) return contract.trump; 
+    if (sameColor(card.suit, contract.trump)) return contract.trump; 
   }
   return card.suit;
 }
@@ -58,7 +57,6 @@ function cardPower(card, contract, ledSuit) {
   return 0;
 }
 
-// plays: [{seat, card}] in play order. First-played wins ties between identical cards.
 function trickWinner(plays, contract) {
   const led = effectiveSuit(plays[0].card, contract);
   let best = plays[0];
@@ -117,6 +115,7 @@ class Game {
     this.leader = null;
     this.tricksWon = [0, 0];
     this.lastResult = null;
+    this.trade = null;
     this.message = `${this.names[this.bidding.turn]} opens the bidding (min ${MIN_BID})`;
   }
 
@@ -128,7 +127,6 @@ class Game {
   }
 
   bid(seat, amount) {
-    // amount: number 6..12, or 'pass'
     if (this.phase !== 'bidding') throw new Error('Bidding is over');
     if (seat !== this.bidding.turn) throw new Error("It's not your turn to bid");
     if (amount === 'pass') {
@@ -144,7 +142,7 @@ class Game {
       this.bidding.log.push({ seat, bid: amount });
       this.message =
         amount === MAX_BID
-          ? `${this.names[seat]} bids HUSSY (all ${TRICKS_PER_HAND})!`
+          ? `${this.names[seat]} bids HOUSEY (all ${TRICKS_PER_HAND})!`
           : `${this.names[seat]} bids ${amount}`;
     }
 
@@ -163,7 +161,6 @@ class Game {
   }
 
   nameTrump(seat, trump) {
-    // trump: 'S'|'H'|'D'|'C' | 'HIGH' (HIGH only legal on a hussy)
     if (this.phase !== 'naming') throw new Error('Not naming trump right now');
     if (seat !== this.bidding.high.seat) throw new Error('Only the bidder names trump');
     const hussy = this.bidding.high.amount === MAX_BID;
@@ -176,20 +173,85 @@ class Game {
       type: trump === 'HIGH' ? 'high' : 'suit',
       trump: trump === 'HIGH' ? null : trump,
     };
-    this.phase = 'playing';
-    this.leader = seat;
-    this.turn = seat;
-    this.trick = [];
+    
     const t = trump === 'HIGH' ? 'High (no trump)' : `${SUIT_GLYPH[trump]} trump`;
-    this.message = hussy
-      ? `${this.names[seat]} goes HOUSEY — ${t}, must take all ${TRICKS_PER_HAND}`
-      : `${this.names[seat]} names ${t} — needs ${this.contract.amount} tricks`;
+    
+    if (hussy) {
+      this.phase = 'trading';
+      this.trade = {
+        amount: null,
+        bidder: seat,
+        partner: (seat + 2) % 4,
+        bidderCards: null,
+        partnerCards: null
+      };
+      this.message = `${this.names[seat]} goes HOUSEY on ${t}! How many cards to trade?`;
+    } else {
+      this.phase = 'playing';
+      this.leader = seat;
+      this.turn = seat;
+      this.trick = [];
+      this.message = `${this.names[seat]} names ${t} — needs ${this.contract.amount} tricks`;
+    }
+  }
+
+  setTradeAmount(seat, amount) {
+    if (this.phase !== 'trading' || seat !== this.trade.bidder) throw new Error("Invalid trade action");
+    if (amount < 0 || amount > 4) throw new Error("Trade 0 to 4 cards");
+    this.trade.amount = amount;
+    
+    if (amount === 0) {
+      this.phase = 'playing';
+      this.leader = this.trade.bidder;
+      this.turn = this.trade.bidder;
+      this.trick = [];
+      this.message = `${this.names[seat]} plays Housey alone (no trade)`;
+    } else {
+      this.message = `${this.names[seat]} is trading ${amount} cards blindly.`;
+    }
+  }
+
+  tradeCards(seat, cardIds) {
+    if (this.phase !== 'trading' || this.trade.amount === null) throw new Error("Not trading cards yet");
+    if (cardIds.length !== this.trade.amount) throw new Error(`Select exactly ${this.trade.amount} cards`);
+
+    const hand = this.hands[seat];
+    for (const id of cardIds) {
+      if (!hand.some(c => c.id === id)) throw new Error("You don't hold that card");
+    }
+
+    if (seat === this.trade.bidder) this.trade.bidderCards = cardIds;
+    else if (seat === this.trade.partner) this.trade.partnerCards = cardIds;
+    else throw new Error("You are not part of the trade");
+
+    if (this.trade.bidderCards && this.trade.partnerCards) {
+      const bHand = this.hands[this.trade.bidder];
+      const pHand = this.hands[this.trade.partner];
+
+      const bGive = this.trade.bidderCards.map(id => bHand.find(c => c.id === id));
+      const pGive = this.trade.partnerCards.map(id => pHand.find(c => c.id === id));
+
+      this.hands[this.trade.bidder] = bHand.filter(c => !this.trade.bidderCards.includes(c.id));
+      this.hands[this.trade.partner] = pHand.filter(c => !this.trade.partnerCards.includes(c.id));
+
+      this.hands[this.trade.bidder].push(...pGive);
+      this.hands[this.trade.partner].push(...bGive);
+
+      this.phase = 'playing';
+      this.leader = this.trade.bidder;
+      this.turn = this.trade.bidder;
+      this.trick = [];
+      this.message = `${this.names[this.trade.bidder]} begins the HOUSEY!`;
+    }
   }
 
   play(seat, cardId) {
     if (this.phase !== 'playing') throw new Error('Not playing right now');
     if (seat !== this.turn) throw new Error("It's not your turn");
-    if (this.trick.length === 4) throw new Error("Waiting for trick to clear");
+    const targetSize = this.contract.hussy ? 3 : 4;
+    if (this.trick.length === targetSize) throw new Error("Waiting for trick to clear");
+    if (this.contract.hussy && seat === (this.contract.bidder + 2) % 4) throw new Error("Partner sits out on a Housey");
+    
     const hand = this.hands[seat];
     const idx = hand.findIndex((c) => c.id === cardId);
     if (idx < 0) throw new Error("You don't hold that card");
@@ -200,25 +262,28 @@ class Game {
     hand.splice(idx, 1);
     this.trick.push({ seat, card });
 
-    if (this.trick.length === 4) {
-      // Just update the message so players know who won during the 3-second pause!
+    if (this.trick.length === targetSize) {
       const w = trickWinner(this.trick, this.contract);
       this.message = `${this.names[w]} takes the trick`;
     } else {
-      this.turn = (this.turn + 1) % 4;
+      do {
+        this.turn = (this.turn + 1) % 4;
+      } while (this.contract.hussy && this.turn === (this.contract.bidder + 2) % 4);
     }
   }
 
   clearTrick() {
-    if (this.trick.length !== 4) return;
+    const targetSize = this.contract.hussy ? 3 : 4;
+    if (this.trick.length !== targetSize) return;
     const w = trickWinner(this.trick, this.contract);
     this.tricksWon[teamOf(w)]++;
-    this.lastTrick = { plays: this.trick, winner: w }; // Now the center cluster only updates AFTER the 3 seconds
+    this.lastTrick = { plays: this.trick, winner: w }; 
     this.leader = w;
     this.turn = w;
     this.trick = [];
-    if (this.hands[0].length === 0) this.finishHand();
+    if (this.hands[this.leader].length === 0) this.finishHand();
   }
+
   finishHand() {
     const b = this.contract.bidder;
     const makers = teamOf(b), defenders = 1 - makers;
@@ -297,6 +362,13 @@ class Game {
             makers: teamOf(c.bidder),
           }
         : null,
+      trade: this.phase === 'trading' && this.trade ? {
+        amount: this.trade.amount,
+        bidder: this.trade.bidder,
+        partner: this.trade.partner,
+        bidderReady: !!this.trade.bidderCards,
+        partnerReady: !!this.trade.partnerCards,
+      } : null,
       trick: this.trick.map((p) => ({ seat: p.seat, name: this.names[p.seat], card: p.card })),
       leader: this.leader,
       lastTrick: this.lastTrick
