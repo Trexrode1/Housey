@@ -201,16 +201,16 @@ class Game {
     this.trade.amount = amount;
     
     if (amount === 0) {
+      this.contract.bigHousey = true;
       this.phase = 'playing';
       this.leader = this.trade.bidder;
       this.turn = this.trade.bidder;
       this.trick = [];
-      this.message = `${this.names[seat]} plays Housey alone (no trade)`;
+      this.message = `${this.names[seat]} goes BIG HOUSEY (0 card trade)!`;
     } else {
       this.message = `${this.names[seat]} is trading ${amount} cards blindly.`;
     }
   }
-
   tradeCards(seat, cardIds) {
     if (this.phase !== 'trading' || this.trade.amount === null) throw new Error("Not trading cards yet");
     if (cardIds.length !== this.trade.amount) throw new Error(`Select exactly ${this.trade.amount} cards`);
@@ -355,12 +355,13 @@ class Game {
       bidLog: this.bidding.log.map((e) => ({ name: this.names[e.seat], bid: e.bid })),
       validBids: this.phase === 'bidding' && this.bidding.turn === seat ? this.validBids() : [],
       canGoHigh: this.phase === 'naming' && this.bidding.high.amount === MAX_BID,
-      contract: c
+contract: c
         ? {
             bidder: c.bidder, bidderName: this.names[c.bidder], amount: c.amount,
-            hussy: c.hussy, type: c.type, trump: c.trump,
+            hussy: c.hussy, bigHousey: c.bigHousey || false, type: c.type, trump: c.trump,
             makers: teamOf(c.bidder),
           }
+        : null,
         : null,
       trade: this.phase === 'trading' && this.trade ? {
         amount: this.trade.amount,
