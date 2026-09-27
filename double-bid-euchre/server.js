@@ -83,8 +83,6 @@ function pumpBots(room) {
   const g = room.game;
   if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
   if (g.trick.length === 4) return; // Stop bots while 4 cards are sitting on the table
-  const g = room.game;
-  if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
   let seat = -1;
   if (g.phase === 'bidding') seat = g.bidding.turn;
   else if (g.phase === 'naming' || g.phase === 'playing') seat = g.turn;
