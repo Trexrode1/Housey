@@ -141,14 +141,16 @@ countLowCards(seat) {
   bid(seat, amount) {
     if (this.phase !== 'bidding') throw new Error('Bidding is over');
     if (seat !== this.bidding.turn) throw new Error("It's not your turn to bid");
+
     if (amount === 'pass') {
       this.bidding.log.push({ seat, bid: 'pass' });
       this.bidding.passes++;
       this.message = `${this.names[seat]} passes`;
     } else {
       const low = this.bidding.high ? this.bidding.high.amount + 1 : MIN_BID;
-      if (!Number.isInteger(amount) || amount < low || amount > MAX_BID)
-        throw new Error(`Bid must be ${low}–${MAX_BID}`);
+      if (!Number.isInteger(amount) || amount < low || amount > MAX_BID) {
+        throw new Error(`Bid must be ${low}-${MAX_BID}`);
+      }
       this.bidding.high = { seat, amount };
       this.bidding.passes = 0;
       this.bidding.log.push({ seat, bid: amount });
@@ -161,13 +163,12 @@ countLowCards(seat) {
     if (this.bidding.high && this.bidding.passes >= 3) {
       this.phase = 'naming';
       this.turn = this.bidding.high.seat;
-      this.message = `${this.names[this.turn]} won the bid — name trump`;
+      this.message = `${this.names[this.turn]} won the bid – name trump`;
     } else if (!this.bidding.high && this.bidding.passes >= 4) {
-  this.bidding.high = { seat: this.bidding.turn, amount: MIN_BID };
-  this.phase = 'naming';
-  this.turn = this.bidding.turn;
-  this.message = `${this.names[this.turn]} was stuck with the bid (${MIN_BID})! Name trump`;
-}
+      this.bidding.high = { seat: this.bidding.turn, amount: MIN_BID };
+      this.phase = 'naming';
+      this.turn = this.bidding.turn;
+      this.message = `${this.names[this.turn]} was stuck with the bid (${MIN_BID})! Name trump`;
     } else {
       this.bidding.turn = (this.bidding.turn + 1) % 4;
       this.turn = this.bidding.turn;
