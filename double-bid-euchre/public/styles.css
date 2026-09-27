@@ -133,7 +133,7 @@ button:disabled { opacity: .4; }
 
 #hand { 
   display: flex; 
-  justify-content: center; 
+  justify-content: flex-start; 
   overflow-x: auto; 
   padding: 18px 12px 10px; 
   gap: 0; 
