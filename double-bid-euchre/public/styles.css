@@ -196,12 +196,24 @@ button:disabled { opacity: .4; }
   margin: 2px 0;
   text-transform: uppercase;
 }
-/* Shift played card inside left seat inward toward center */
-.seat.left .played {
-  margin-left: 100px;
+/* Layout side seats horizontally (Name box side-by-side with played card) */
+.seat.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* Shift played card inside right seat inward toward center */
+.seat.right {
+  display: flex;
+  flex-direction: row-reverse; /* Places card to the left of Dot's name box */
+  align-items: center;
+  gap: 12px;
+}
+
+/* Remove vertical margin offset so they align perfectly on the center line */
+.seat.left .played,
 .seat.right .played {
-  margin-right: 100px;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
 }
