@@ -201,11 +201,8 @@ class Game {
     this.trick.push({ seat, card });
 
     if (this.trick.length === 4) {
+      // Just update the message so players know who won during the 3-second pause!
       const w = trickWinner(this.trick, this.contract);
-      this.tricksWon[teamOf(w)]++;
-      this.lastTrick = { plays: this.trick, winner: w };
-      this.leader = w;
-      this.turn = w;
       this.message = `${this.names[w]} takes the trick`;
     } else {
       this.turn = (this.turn + 1) % 4;
@@ -213,6 +210,12 @@ class Game {
   }
 
   clearTrick() {
+    if (this.trick.length !== 4) return;
+    const w = trickWinner(this.trick, this.contract);
+    this.tricksWon[teamOf(w)]++;
+    this.lastTrick = { plays: this.trick, winner: w }; // Now the center cluster only updates AFTER the 3 seconds
+    this.leader = w;
+    this.turn = w;
     this.trick = [];
     if (this.hands[0].length === 0) this.finishHand();
   }
