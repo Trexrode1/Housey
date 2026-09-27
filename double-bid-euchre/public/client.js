@@ -137,8 +137,9 @@ function renderGame(m) {
     const isSittingOut = (g.phase === 'playing' || g.phase === 'trading') && g.contract && g.contract.hussy && seat === (g.contract.bidder + 2) % 4;
     
     info.className = 'seatinfo' + (isTurn ? ' turn' : '') + (!m.connected[seat] ? ' away' : '') + (isSittingOut ? ' away' : '');
-    info.innerHTML = `<div class="n">${seat === mySeat ? 'YOU' : escapeHtml(g.names[seat])}` +
-      `${m.bots && m.bots[seat] ? ' [BOT]' : ''}${g.dealer === seat ? ' (D)' : ''}</div><div class="c">${g.handCounts[seat]} cards${isSittingOut ? '<br><i>Sitting Out</i>' : ''}</div>`;
+   info.innerHTML = `<div class="n">${seat === mySeat ? 'YOU' : escapeHtml(g.names[seat])}${m.bots && m.bots[seat] ? ' [BOT]' : ''}</div>` +
+  `${g.dealer === seat ? '<span class="dealer-badge">DEALER</span>' : ''}` +
+  `<div class="c">${g.handCounts[seat]} cards${isSittingOut ? '<br><i>Sitting Out</i>' : ''}</div>`;
     const pl = $(`played-${pos}`);
     pl.innerHTML = playedBy[seat] ? cardHTML(playedBy[seat], true) : '';
   });
