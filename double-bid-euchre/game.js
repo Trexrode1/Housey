@@ -189,6 +189,7 @@ class Game {
   play(seat, cardId) {
     if (this.phase !== 'playing') throw new Error('Not playing right now');
     if (seat !== this.turn) throw new Error("It's not your turn");
+    if (this.trick.length === 4) throw new Error("Waiting for trick to clear");
     const hand = this.hands[seat];
     const idx = hand.findIndex((c) => c.id === cardId);
     if (idx < 0) throw new Error("You don't hold that card");
@@ -201,20 +202,18 @@ class Game {
 
     if (this.trick.length === 4) {
       const w = trickWinner(this.trick, this.contract);
+      this.tricksWon[teamOf(w)]++;
+      this.lastTrick = { plays: this.trick, winner: w };
+      this.leader = w;
+      this.turn = w;
       this.message = `${this.names[w]} takes the trick`;
     } else {
       this.turn = (this.turn + 1) % 4;
     }
   }
 
-  resolveTrick() {
-    if (this.trick.length !== 4) return;
-    const w = trickWinner(this.trick, this.contract);
-    this.tricksWon[teamOf(w)]++;
-    this.lastTrick = { plays: this.trick, winner: w };
+  clearTrick() {
     this.trick = [];
-    this.leader = w;
-    this.turn = w;
     if (this.hands[0].length === 0) this.finishHand();
   }
   finishHand() {
