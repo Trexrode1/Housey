@@ -125,7 +125,7 @@ function renderGame(m) {
 
   $('scorebar').innerHTML =
     `<div class="team"><div class="${myTeam === 0 ? 'me' : ''}">${escapeHtml(teamNames(g, 0))}</div><div class="sc">${g.scores[0]}</div></div>` +
-    `<div class="mid">first to<br><b>62</b></div>` +
+    `<div class="mid">first to <b>62</b><br><button onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/';" class="leave-btn">Leave</button></div>` +
     `<div class="team right"><div class="${myTeam === 1 ? 'me' : ''}">${escapeHtml(teamNames(g, 1))}</div><div class="sc">${g.scores[1]}</div></div>`;
 
   const playedBy = {};
