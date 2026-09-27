@@ -227,7 +227,7 @@ function onMessage(ws, raw) {
         broadcast(room);
         break;
       }
-      case 'play': {
+     case 'play': {
         if (!room || !room.game) return err(ws, 'No game');
         const seat = seatOf(room, ws);
         room.game.play(seat, String(m.card));
@@ -238,6 +238,7 @@ function onMessage(ws, raw) {
             if (room.game) {
               room.game.clearTrick();
               broadcast(room);
+              pumpBots(room); // <--- Triggers the winner/bot to play the next lead!
             }
           }, 3000);
         }
