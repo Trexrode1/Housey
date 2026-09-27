@@ -144,10 +144,8 @@ function renderGame(m) {
     pl.innerHTML = playedBy[seat] ? cardHTML(playedBy[seat], true) : '';
   });
 
-  $('#trick-center').innerHTML = '';
-//  $('trick-center').innerHTML = g.trick.map((p) =>
-  //  `<div class="tcard">${cardHTML(p.card, true)}<div class="who">${p.seat === mySeat ? 'YOU' : escapeHtml(p.name)}</div></div>`
-  //).join('');
+const tc = $('#trick-center');
+if (tc) tc.innerHTML = '';
 
   $('status').innerHTML = statusHTML(g);
 
