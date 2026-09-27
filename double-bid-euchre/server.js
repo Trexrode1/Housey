@@ -227,12 +227,28 @@ function onMessage(ws, raw) {
         break;
       }
       case 'play': {
-        if (!room || !room.game) return err(ws, 'No game');
-        const seat = seatOf(room, ws);
-        room.game.play(seat, String(m.card));
-        broadcast(room);
-        break;
-      }
+     if (!room || !room.game) return err(ws, 'No game');
+     if (room.trickTimer) return; // Prevent playing during trick resolution pause
+     const seat = seatOf(room, ws);
+     const trickFinished = room.game.trick.length === 3; // 4th card being played
+
+     room.game.play(seat, String(m.card));
+
+     if (trickFinished && room.game.phase === 'playing') {
+       // Send state with all 4 cards visible on table
+       broadcast(room);
+
+       // Pause for 3 seconds before clearing trick and giving turn to winner
+       room.trickTimer = setTimeout(() => {
+         room.trickTimer = null;
+         room.game.resolveTrick();
+         broadcast(room);
+       }, 3000);
+     } else {
+       broadcast(room);
+     }
+     break;
+   }
       case 'next': {
         if (!room || !room.game) return err(ws, 'No game');
         try {
