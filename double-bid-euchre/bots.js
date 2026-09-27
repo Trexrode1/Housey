@@ -122,11 +122,17 @@ function chooseTradeCards(game, seat, amount) {
 
 // --- 3. TRICK PLAY (CARD COUNTING & SYNERGY) ---
 
-function getPlayedCardIds(game) {
-  const played = new Set();
-  game.trick.forEach(p => played.add(p.card.id));
-  if (game.lastTrick) game.lastTrick.plays.forEach(p => played.add(p.card.id));
-  return played;
+// Function to rate card value when choosing what to throw away (sluff)
+function sluffPriority(card, contract) {
+  const es = effectiveSuit(card, contract);
+  // Never sluff trump if possible
+  if (contract.trump && es === contract.trump) return 1000 + RANK_VAL[card.rank];
+  // Off-suit Aces are boss cards, keep them!
+  if (card.rank === 'A') return 500;
+  if (card.rank === 'K') return 300;
+  if (card.rank === 'Q') return 200;
+  // Throw away low off-suit junk first (9, 10, J)
+  return RANK_VAL[card.rank];
 }
 
 function chooseCard(game, seat) {
@@ -134,8 +140,14 @@ function chooseCard(game, seat) {
   const contract = game.contract;
   const trick = game.trick;
   const pow = (c, led) => cardPower(c, contract, led);
-  const minOf = (cards, led) => cards.reduce((a, b) => (pow(a, led) <= pow(b, led) ? a : b));
   const maxOf = (cards, led) => cards.reduce((a, b) => (pow(a, led) >= pow(b, led) ? a : b));
+
+  // Helper to pick the absolute worst card to throw away
+  const worstCardToSluff = (cards) => {
+    return cards.reduce((worst, c) => 
+      sluffPriority(c, contract) < sluffPriority(worst, contract) ? c : worst
+    );
+  };
 
   // A) LEADING A TRICK
   if (!trick.length) {
@@ -144,6 +156,10 @@ function chooseCard(game, seat) {
       const trumps = hand.filter(c => effectiveSuit(c, contract) === contract.trump);
       if (trumps.length) return maxOf(trumps, contract.trump).id;
     }
+    // Otherwise lead off-suit Aces first to win easy tricks
+    const offSuitAces = hand.filter(c => c.rank === 'A' && effectiveSuit(c, contract) !== contract.trump);
+    if (offSuitAces.length) return offSuitAces[0].id;
+
     // Otherwise lead highest available card
     let best = hand[0], bestPow = -1;
     for (const c of hand) {
@@ -163,7 +179,7 @@ function chooseCard(game, seat) {
   if (partnerWinning) {
     const winningPlay = trick.find(p => p.seat === currentWinner);
     if (winningPlay && pow(winningPlay.card, ledSuit) >= 13) {
-      return minOf(legal, ledSuit).id; // Sluff lowest card
+      return worstCardToSluff(legal).id; // Sluff lowest garbage card
     }
   }
 
@@ -173,11 +189,11 @@ function chooseCard(game, seat) {
 
   if (winningOptions.length) {
     // Take the trick as cheaply as possible
-    return minOf(winningOptions, ledSuit).id; 
+    return winningOptions.reduce((a, b) => (pow(a, ledSuit) <= pow(b, ledSuit) ? a : b)).id; 
   }
 
-  // Can't win: sluff lowest legal card
-  return minOf(legal, ledSuit).id; 
+  // Can't win: throw away lowest priority garbage card
+  return worstCardToSluff(legal).id; 
 }
 
 module.exports = {
