@@ -147,3 +147,18 @@ button:disabled { opacity: .4; }
 }
 .resultbox .big { font-size: 20px; font-weight: 800; }
 .resultbox .hussy { color: #ff8080; }
+
+#scorebar .leave-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  margin-top: 4px;
+  background: #a33327;
+  color: #fff;
+  border-radius: 4px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+#scorebar .leave-btn:active {
+  transform: scale(0.95);
+}
