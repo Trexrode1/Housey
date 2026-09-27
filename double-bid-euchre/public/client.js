@@ -143,10 +143,11 @@ function renderGame(m) {
     const pl = $(`played-${pos}`);
     pl.innerHTML = playedBy[seat] ? cardHTML(playedBy[seat], true) : '';
   });
-  
-  $('trick-center').innerHTML = g.trick.map((p) =>
-    `<div class="tcard">${cardHTML(p.card, true)}<div class="who">${p.seat === mySeat ? 'YOU' : escapeHtml(p.name)}</div></div>`
-  ).join('');
+
+  $('#trick-center').innerHTML = '';
+//  $('trick-center').innerHTML = g.trick.map((p) =>
+  //  `<div class="tcard">${cardHTML(p.card, true)}<div class="who">${p.seat === mySeat ? 'YOU' : escapeHtml(p.name)}</div></div>`
+  //).join('');
 
   $('status').innerHTML = statusHTML(g);
 
