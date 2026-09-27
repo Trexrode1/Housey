@@ -210,7 +210,7 @@ function renderActionBar(m, g) {
     h += `<div class="cur">${g.bid ? `Current: ${g.bid.amount} by ${escapeHtml(g.bid.by)}` : 'No bids yet — minimum 6'}</div>`;
     g.validBids.forEach((b) => {
       h += b === 12
-        ? `<button class="bidbtn hussybtn" data-act="bid" data-v="12">12 · HUSSY</button>`
+        ? `<button class="bidbtn hussybtn" data-act="bid" data-v="12">12 · HOUSEY</button>`
         : `<button class="bidbtn" data-act="bid" data-v="${b}">${b}</button>`;
     });
     h += `<button class="passbtn" data-act="pass">Pass</button>`;
