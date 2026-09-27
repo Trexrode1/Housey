@@ -78,7 +78,16 @@ function pumpBots(room) {
   }
   
   let seat = -1;
-  if (g.phase === 'bidding') seat = g.bidding.turn;
+ if (g.phase === 'bidding') {
+    seat = g.bidding.turn;
+    if (seat >= 0 && room.seats[seat] && room.seats[seat].bot && g.canRedeal(seat)) {
+      room.botTimer = setTimeout(() => {
+        g.redealHand(seat);
+        broadcast(room);
+      }, botDelay());
+      return;
+    }
+  }
   else if (g.phase === 'naming') seat = g.turn;
   else if (g.phase === 'playing') seat = g.turn;
   else if (g.phase === 'trading') {
@@ -170,6 +179,12 @@ function onMessage(ws, raw) {
         if (room.game) return err(ws, 'Game already started');
         if (room.seats.some((s) => !s)) return err(ws, 'Need 4 players to start');
         room.game = new Game(room.seats.map((s) => s.name));
+        broadcast(room);
+        break;
+      }
+        case 'redeal': {
+        if (!room || !room.game) return err(ws, 'No game');
+        room.game.redealHand(seatOf(room, ws));
         broadcast(room);
         break;
       }
