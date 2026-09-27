@@ -182,7 +182,7 @@ class Game {
     this.trick = [];
     const t = trump === 'HIGH' ? 'High (no trump)' : `${SUIT_GLYPH[trump]} trump`;
     this.message = hussy
-      ? `${this.names[seat]} goes HUSSY — ${t}, must take all ${TRICKS_PER_HAND}`
+      ? `${this.names[seat]} goes HOUSEY — ${t}, must take all ${TRICKS_PER_HAND}`
       : `${this.names[seat]} names ${t} — needs ${this.contract.amount} tricks`;
   }
 
@@ -227,10 +227,10 @@ class Game {
     if (this.contract.hussy) {
       if (mt === TRICKS_PER_HAND) {
         this.scores[makers] += 24;
-        detail = `HUSSY MADE! +24`;
+        detail = `HOUSEY MADE! +24`;
       } else {
         this.scores[makers] -= 12;
-        detail = `Hussy set! −12`;
+        detail = `HOUSEY set! −12`;
       }
       this.scores[defenders] += dt;
     } else {
