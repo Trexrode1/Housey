@@ -103,10 +103,14 @@ button:disabled { opacity: .4; }
 .tcard .who { font-size: 10px; opacity: .8; margin-top: 2px; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .card {
-  width: 56px; height: 80px; background: #fdfbf4; border-radius: 8px; color: #1c1c1c;
+  width: 52px; height: 76px; background: #fdfbf4; border-radius: 8px; color: #1c1c1c;
   display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
   font-weight: 800; box-shadow: 0 2px 5px rgba(0,0,0,.4); border: 1px solid #d8d2c0;
   flex: 0 0 auto; cursor: pointer; position: relative;
+}
+.card.red { color: #c0272d; }
+.card .rank { font-size: 18px; line-height: 1; }
+.card .suit { font-size: 20px; line-height: 1.05; }
 }
 .card.red { color: #c0272d; }
 .card .rank { font-size: 19px; line-height: 1; }
@@ -127,10 +131,29 @@ button:disabled { opacity: .4; }
 #actionbar .title { width: 100%; text-align: center; font-weight: 700; margin-bottom: 2px; }
 #actionbar .cur { width: 100%; text-align: center; font-size: 14px; opacity: .85; }
 
-#hand { display: flex; justify-content: flex-start; overflow-x: auto; padding: 14px 6px 6px; gap: 0; }
-#hand .card { margin-left: -26px; transition: transform .12s; }
+#hand { 
+  display: flex; 
+  justify-content: center; 
+  overflow-x: auto; 
+  padding: 18px 12px 10px; 
+  gap: 0; 
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+#hand .card { 
+  margin-left: -16px; 
+  transition: transform .12s, margin .12s; 
+  flex-shrink: 0;
+}
 #hand .card:first-child { margin-left: 0; }
-#hand .card.sel { transform: translateY(-14px); outline: 3px solid #ffd97a; }
+#hand .card:hover, #hand .card:active {
+  z-index: 10;
+}
+#hand .card.sel { 
+  transform: translateY(-16px); 
+  outline: 3px solid #ffd97a; 
+  z-index: 12;
+}
 
 #toast {
   position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
