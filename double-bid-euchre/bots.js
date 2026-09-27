@@ -9,9 +9,6 @@ const {
 const RED = new Set(['H', 'D']);
 const sameColor = (a, b) => RED.has(a) === RED.has(b);
 
-// Rough trick estimate for a hand if `trump` were named.
-// EST_SCALE calibrates the raw per-card values so a median 12-card hand
-// estimates ~6.5 tricks (empirically tuned over random deals).
 const EST_SCALE = 1.66;
 
 function estimateForTrump(hand, trump) {
@@ -20,8 +17,8 @@ function estimateForTrump(hand, trump) {
   for (const c of hand) {
     const es = effectiveSuit(c, contract);
     if (es === trump) {
-      if (c.rank === 'J' && c.suit === trump) est += 0.95; // right bower
-      else if (c.rank === 'J' && sameColor(c.suit, trump)) est += 0.9; // left bower
+      if (c.rank === 'J' && c.suit === trump) est += 0.95; 
+      else if (c.rank === 'J' && sameColor(c.suit, trump)) est += 0.9; 
       else if (c.rank === 'A') est += 0.8;
       else if (c.rank === 'K') est += 0.55;
       else if (c.rank === 'Q') est += 0.35;
@@ -50,15 +47,12 @@ function chooseBid(game, seat) {
   if (!valid.length) return 'pass';
   const low = valid[0];
   const { est } = bestTrump(game.hands[seat]);
-  // hussy only with a near-perfect hand
   let target = est >= 11.5 ? MAX_BID : Math.floor(est + (Math.random() * 0.8 - 0.4));
   if (target < 6) return 'pass';
   if (target > MAX_BID) target = MAX_BID;
   if (target < low) return 'pass';
-  // don't leap straight to a hussy unless the hand truly demands it
   if (target === MAX_BID && est < 11.5) target = Math.min(11, Math.max(low, 11));
   if (target < low) return 'pass';
-  // occasional aggression
   if (target < MAX_BID && Math.random() < 0.1 && valid.includes(target + 1)) target++;
   return valid.includes(target) ? target : low;
 }
@@ -68,11 +62,42 @@ function chooseTrump(game, seat) {
   const hussy = game.bidding.high && game.bidding.high.amount === MAX_BID;
   const { trump, est } = bestTrump(hand);
   if (hussy) {
-    // go High (no trump) only with aces everywhere
     const aces = hand.filter((c) => c.rank === 'A').length;
     if (aces >= 5) return 'HIGH';
   }
   return trump;
+}
+
+function tradeValue(card, contract) {
+  if (contract.type === 'suit' && effectiveSuit(card, contract) === contract.trump) {
+    if (card.rank === 'J' && card.suit === contract.trump) return 200;
+    if (card.rank === 'J' && sameColor(card.suit, contract.trump)) return 190;
+    return 100 + RANK_VAL[card.rank];
+  }
+  return RANK_VAL[card.rank]; 
+}
+
+function chooseTradeAmount(game, seat) {
+  const hand = game.hands[seat];
+  let junk = 0;
+  for (const c of hand) {
+    if (tradeValue(c, game.contract) < 14) junk++; 
+  }
+  return Math.min(4, Math.max(0, junk));
+}
+
+function chooseTradeCards(game, seat, amount) {
+  const hand = game.hands[seat].slice();
+  const isBidder = seat === game.trade.bidder;
+
+  hand.sort((a, b) => tradeValue(a, game.contract) - tradeValue(b, game.contract));
+
+  if (isBidder) {
+    return hand.slice(0, amount).map(c => c.id);
+  } else {
+    hand.reverse();
+    return hand.slice(0, amount).map(c => c.id);
+  }
 }
 
 function chooseCard(game, seat) {
@@ -82,7 +107,6 @@ function chooseCard(game, seat) {
   const pow = (c, led) => cardPower(c, contract, led);
 
   if (!trick.length) {
-    // leading: play the strongest card
     let best = hand[0], bestPow = -1;
     for (const c of hand) {
       const p = pow(c, effectiveSuit(c, contract));
@@ -97,14 +121,12 @@ function chooseCard(game, seat) {
 
   const minOf = (cards) => cards.reduce((a, b) => (pow(a, ledSuit) <= pow(b, ledSuit) ? a : b));
 
-  if (teamOf(winner) === teamOf(seat)) {
-    // partner is winning: don't waste anything good
-    return minOf(legal).id;
-  }
+  if (teamOf(winner) === teamOf(seat)) return minOf(legal).id;
+  
   const bestPow = Math.max(...trick.map((p) => pow(p.card, ledSuit)));
   const winners = legal.filter((c) => pow(c, ledSuit) > bestPow);
-  if (winners.length) return minOf(winners).id; // cheapest card that takes it
-  return minOf(legal).id; // can't win: throw the lowest
+  if (winners.length) return minOf(winners).id; 
+  return minOf(legal).id; 
 }
 
-module.exports = { chooseBid, chooseTrump, chooseCard, estimateForTrump, bestTrump };
+module.exports = { chooseBid, chooseTrump, chooseCard, chooseTradeAmount, chooseTradeCards, estimateForTrump, bestTrump };
