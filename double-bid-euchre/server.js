@@ -82,7 +82,18 @@ function pumpBots(room) {
   }
   const g = room.game;
   if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
-  if (g.trick.length === 4) return; // Stop bots while 4 cards are sitting on the table
+  if (g.trick.length === 4) {
+    if (!room.trickTimer) {
+      room.trickTimer = setTimeout(() => {
+        room.trickTimer = null;
+        if (room.game && room.game.trick.length === 4) {
+          room.game.clearTrick();
+          broadcast(room);
+        }
+      }, 3000);
+    }
+    return; // Block bots until the timer finishes and clears the table
+  }
   let seat = -1;
   if (g.phase === 'bidding') seat = g.bidding.turn;
   else if (g.phase === 'naming' || g.phase === 'playing') seat = g.turn;
@@ -232,16 +243,6 @@ function onMessage(ws, raw) {
         const seat = seatOf(room, ws);
         room.game.play(seat, String(m.card));
         broadcast(room);
-
-        if (room.game.trick.length === 4) {
-          setTimeout(() => {
-            if (room.game) {
-              room.game.clearTrick();
-              broadcast(room);
-              pumpBots(room); // <--- Triggers the winner/bot to play the next lead!
-            }
-          }, 3000);
-        }
         break;
       }
       case 'next': {
