@@ -1,0 +1,1 @@
+{"dependencies":{"ws":"^8.22.0"},"description":"Online multiplayer Double-Bid Euchre (4 players, double deck, private rooms, bots)","engines":{"node":">=18"},"license":"ISC","main":"server.js","name":"double-bid-euchre","scripts":{"start":"node server.js","test":"node test-engine.js && node test-bots.js"},"version":"1.0.0"}

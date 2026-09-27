@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Double-Bid Euchre</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <section id="view-home" class="view">
+    <h1>Double-Bid Euchre</h1>
+    <p class="tagline">Private online games · 4 players · double deck</p>
+    <input id="name" maxlength="14" placeholder="Your name" autocomplete="off">
+    <div class="row">
+      <button id="btn-host" class="primary">Host private game</button>
+    </div>
+    <div class="joinrow">
+      <input id="code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters">
+      <button id="btn-join">Join</button>
+    </div>
+    <p id="home-err" class="err"></p>
+    <details class="rules">
+      <summary>House rules</summary>
+      <ul>
+        <li>4 players, partners across. 48-card double deck (two 9–A sets), 12 cards each, 12 tricks.</li>
+        <li>Bidding starts left of the dealer. Minimum bid <b>6</b>. Outbid or pass; you may re-enter after passing. 3 passes in a row ends it.</li>
+        <li>High bidder names the trump suit and leads the first trick.</li>
+        <li><b>HUSSY</b>: bid <b>12</b> to take <i>all</i> 12 tricks. Made = <b>+24</b>, set = <b>−12</b>.</li>
+        <li>No-trump ("High", aces high) may <b>only</b> be named on a hussy.</li>
+        <li>Right bower (J of trump) is highest, then left bower (J of same color). Two identical cards: first played wins the trick.</li>
+        <li>Make your bid: 1 point per trick taken. Miss it: minus your bid. Defenders: 1 point per trick taken.</li>
+        <li>First team to <b>62</b> wins. If everyone passes, the hand is redealt.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="view-lobby" class="view hidden">
+    <h2>Private game</h2>
+    <div class="codebox"><span>Room code</span><strong id="lobby-code">----</strong></div>
+    <p class="hint">Share this code — the other players join with it. Short a player? Add a bot to any empty seat.</p>
+    <div id="lobby-players" class="players"></div>
+    <div class="teams-hint">Seats 1 &amp; 3 are partners · Seats 2 &amp; 4 are partners</div>
+    <div class="row">
+      <button id="btn-start" class="primary hidden">Start game</button>
+      <button id="btn-leave-lobby" class="ghost">Leave</button>
+    </div>
+    <p id="lobby-err" class="err"></p>
+  </section>
+
+  <!-- GAME -->
+  <section id="view-game" class="view hidden">
+    <div id="scorebar"></div>
+    <div id="status"></div>
+    <div id="table">
+      <div class="seat top"><div class="seatinfo" id="seat-top"></div><div class="played" id="played-top"></div></div>
+      <div class="seat left"><div class="seatinfo" id="seat-left"></div><div class="played" id="played-left"></div></div>
+      <div class="seat right"><div class="seatinfo" id="seat-right"></div><div class="played" id="played-right"></div></div>
+      <div class="seat bottom"><div class="played" id="played-bottom"></div><div class="seatinfo" id="seat-bottom"></div></div>
+      <div id="trick-center"></div>
+    </div>
+    <div id="bidlog"></div>
+    <div id="actionbar"></div>
+    <div id="hand"></div>
+  </section>
+
+</div>
+<div id="toast" class="hidden"></div>
+<div id="conn" class="hidden">Connection lost — retrying…</div>
+<script src="client.js"></script>
+</body>
+</html>
