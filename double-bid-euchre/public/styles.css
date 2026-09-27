@@ -185,3 +185,14 @@ button:disabled { opacity: .4; }
 #scorebar .leave-btn:active {
   transform: scale(0.95);
 }
+.dealer-badge {
+  display: inline-block;
+  background: #f59e0b;
+  color: #000;
+  font-weight: bold;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin: 2px 0;
+  text-transform: uppercase;
+}
