@@ -80,6 +80,7 @@ function pumpBots(room) {
     clearTimeout(room.botTimer);
     room.botTimer = null;
   }
+  if (room.trickTimer) return; // Don't let bots play while trick resolution pause is active
   const g = room.game;
   if (!g || g.phase === 'gameOver' || g.phase === 'handEnd') return;
   let seat = -1;
