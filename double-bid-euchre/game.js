@@ -118,7 +118,19 @@ class Game {
     this.trade = null;
     this.message = `${this.names[this.bidding.turn]} opens the bidding (min ${MIN_BID})`;
   }
+countLowCards(seat) {
+    return this.hands[seat].filter(c => c.rank === '9' || c.rank === '10').length;
+  }
 
+  canRedeal(seat) {
+    return this.phase === 'bidding' && this.countLowCards(seat) >= 8;
+  }
+
+  redealHand(seat) {
+    if (!this.canRedeal(seat)) throw new Error("You don't have 8 or more 9s and 10s");
+    this.message = `${this.names[seat]} called a redeal (8+ Nines & Tens)!`;
+    this.startHand();
+  }
   validBids() {
     const low = this.bidding.high ? this.bidding.high.amount + 1 : MIN_BID;
     const bids = [];
@@ -364,7 +376,9 @@ class Game {
         : null,
       bidLog: this.bidding.log.map((e) => ({ name: this.names[e.seat], bid: e.bid })),
       validBids: this.phase === 'bidding' && this.bidding.turn === seat ? this.validBids() : [],
-      canGoHigh: this.phase === 'naming' && this.bidding.high.amount === MAX_BID,
+     canGoHigh: this.phase === 'naming' && this.bidding.high.amount === MAX_BID,
+      canRedeal: this.canRedeal(seat),
+      lowCardCount: this.countLowCards(seat),
 contract: c
         ? {
             bidder: c.bidder, bidderName: this.names[c.bidder], amount: c.amount,
