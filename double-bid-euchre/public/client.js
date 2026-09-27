@@ -5,8 +5,9 @@ const RED = new Set(['H', 'D']);
 
 let ws = null;
 let myName = '', roomCode = '', mySeat = -1, isHost = false;
-let selectedCard = null;
+let selectedCards = []; // Now supports multi-select for trades!
 let toastTimer = null;
+let currentGame = null;
 
 function show(view) {
   ['view-home', 'view-lobby', 'view-game'].forEach((v) => $(v).classList.toggle('hidden', v !== view));
@@ -97,14 +98,13 @@ function renderLobby(m) {
     box.appendChild(d);
   });
   const full = m.seats.every(Boolean);
-  $('btn-start').classList.toggle('hidden', !m.isHost);
-  $('btn-start').disabled = !full;
+  $('btn-start').classList.toggle('hidden', !m.isHost);$('btn-start').disabled = !full;
   $('btn-start').textContent = full ? 'Start game' : 'Waiting for players…';
   $('lobby-err').textContent = '';
 }
 
 // ---------- game ----------
-const rel = (seat) => (seat - mySeat + 4) % 4; // 0 bottom,1 left,2 top,3 right
+const rel = (seat) => (seat - mySeat + 4) % 4; 
 const POS = ['bottom', 'left', 'top', 'right'];
 
 function cardHTML(c, small) {
@@ -120,36 +120,35 @@ function teamNames(g, team) {
 function renderGame(m) {
   show('view-game');
   const g = m.game;
+  currentGame = g;
   const myTeam = mySeat % 2;
 
-  // scorebar
   $('scorebar').innerHTML =
     `<div class="team"><div class="${myTeam === 0 ? 'me' : ''}">${escapeHtml(teamNames(g, 0))}</div><div class="sc">${g.scores[0]}</div></div>` +
     `<div class="mid">first to<br><b>62</b></div>` +
     `<div class="team right"><div class="${myTeam === 1 ? 'me' : ''}">${escapeHtml(teamNames(g, 1))}</div><div class="sc">${g.scores[1]}</div></div>`;
 
-  // seats + trick
   const playedBy = {};
   g.trick.forEach((p) => { playedBy[p.seat] = p.card; });
   POS.forEach((pos, r) => {
     const seat = [0, 1, 2, 3].find((s) => rel(s) === r);
     const info = $(`seat-${pos}`);
     const isTurn = g.turn === seat && (g.phase === 'bidding' || g.phase === 'naming' || g.phase === 'playing');
-    info.className = 'seatinfo' + (isTurn ? ' turn' : '') + (!m.connected[seat] ? ' away' : '');
+    const isSittingOut = (g.phase === 'playing' || g.phase === 'trading') && g.contract && g.contract.hussy && seat === (g.contract.bidder + 2) % 4;
+    
+    info.className = 'seatinfo' + (isTurn ? ' turn' : '') + (!m.connected[seat] ? ' away' : '') + (isSittingOut ? ' away' : '');
     info.innerHTML = `<div class="n">${seat === mySeat ? 'YOU' : escapeHtml(g.names[seat])}` +
-      `${m.bots && m.bots[seat] ? ' [BOT]' : ''}${g.dealer === seat ? ' (D)' : ''}</div><div class="c">${g.handCounts[seat]} cards</div>`;
+      `${m.bots && m.bots[seat] ? ' [BOT]' : ''}${g.dealer === seat ? ' (D)' : ''}</div><div class="c">${g.handCounts[seat]} cards${isSittingOut ? '<br><i>Sitting Out</i>' : ''}</div>`;
     const pl = $(`played-${pos}`);
     pl.innerHTML = playedBy[seat] ? cardHTML(playedBy[seat], true) : '';
   });
-  // trick center shows play order with names
+  
   $('trick-center').innerHTML = g.trick.map((p) =>
     `<div class="tcard">${cardHTML(p.card, true)}<div class="who">${p.seat === mySeat ? 'YOU' : escapeHtml(p.name)}</div></div>`
   ).join('');
 
-  // status
   $('status').innerHTML = statusHTML(g);
 
-  // bid log
   $('bidlog').innerHTML = g.bidLog.length
     ? 'Bids: ' + g.bidLog.map((e) =>
         e.bid === 'pass' ? `${escapeHtml(e.name)} pass`
@@ -157,8 +156,8 @@ function renderGame(m) {
         : `${escapeHtml(e.name)} ${e.bid}`).join(' · ')
     : '';
 
-  renderActionBar(m, g);
-  renderHand(m, g);
+  renderActionBar(g);
+  renderHand(g);
 }
 
 function contractLine(g) {
@@ -166,7 +165,7 @@ function contractLine(g) {
   if (!c) return '';
   const trumpTxt = c.type === 'high' ? 'High (no trump)' : `${GLYPH[c.trump]} trump`;
   const need = c.hussy
-    ? `<span class="hussy">HUSSY by ${escapeHtml(c.bidderName)} — must take all 12</span>`
+    ? `<span class="hussy">HOUSEY by ${escapeHtml(c.bidderName)} — must take all 12</span>`
     : `${escapeHtml(c.bidderName)} bid ${c.amount} · ${trumpTxt}`;
   const us = g.tricksWon[mySeat % 2], them = g.tricksWon[1 - (mySeat % 2)];
   return `${need}<br>Us ${us} – Them ${them}`;
@@ -176,7 +175,7 @@ function statusHTML(g) {
   const turnName = g.turn === mySeat ? 'YOU' : escapeHtml(g.names[g.turn] || '');
   switch (g.phase) {
     case 'bidding': {
-      const cur = g.bid ? ` · current: <b>${g.bid.amount === 12 ? '<span class="hussy">HUSSY</span>' : g.bid.amount}</b> by ${escapeHtml(g.bid.by)}` : ` · min bid 6`;
+      const cur = g.bid ? ` · current: <b>${g.bid.amount === 12 ? '<span class="hussy">HOUSEY</span>' : g.bid.amount}</b> by ${escapeHtml(g.bid.by)}` : ` · min bid 6`;
       const t = g.turn === mySeat ? `<div class="big">Your bid${cur}</div>` : `Bidding${cur}<br>Waiting for <b>${turnName}</b>…`;
       return t + `<br><span style="opacity:.65;font-size:13px">${escapeHtml(g.message)}</span>`;
     }
@@ -184,13 +183,15 @@ function statusHTML(g) {
       return g.turn === mySeat
         ? `<div class="big">You won the bid — name trump</div>`
         : `<div class="big">${turnName} won the bid</div>naming trump…`;
+    case 'trading':
+      return `<div class="big">HOUSEY Trade!</div><span style="opacity:.65;font-size:13px">${escapeHtml(g.message)}</span>`;
     case 'playing':
       return `${contractLine(g)}<br>` +
         (g.turn === mySeat ? `<div class="big">Your turn</div>` : `Waiting for <b>${turnName}</b>…`);
     case 'handEnd': {
       const r = g.lastResult;
       return `<div class="resultbox"><div class="big ${r.hussy ? 'hussy' : ''}">${escapeHtml(r.detail)}</div>` +
-        `<div>${escapeHtml(r.bidder)} ${r.hussy ? 'went hussy' : `bid ${r.amount}`} · makers ${r.makersTricks} – defenders ${r.defendersTricks}</div>` +
+        `<div>${escapeHtml(r.bidder)} ${r.hussy ? 'went housey' : `bid ${r.amount}`} · makers ${r.makersTricks} – defenders ${r.defendersTricks}</div>` +
         `<div style="margin-top:6px">Score: <b>${g.scores[0]}</b> – <b>${g.scores[1]}</b></div></div>`;
     }
     case 'gameOver': {
@@ -202,12 +203,12 @@ function statusHTML(g) {
   return escapeHtml(g.message);
 }
 
-function renderActionBar(m, g) {
+function renderActionBar(g) {
   const bar = $('actionbar');
   let h = '';
   if (g.phase === 'bidding' && g.turn === mySeat) {
     h += `<div class="title">Your bid</div>`;
-    h += `<div class="cur">${g.bid ? `Current: ${g.bid.amount} by ${escapeHtml(g.bid.by)}` : 'No bids yet — minimum 6'}</div>`;
+    h += `<div class="cur">${g.bid ? `Current: ${g.bid.amount} by${escapeHtml(g.bid.by)}` : 'No bids yet — minimum 6'}</div>`;
     g.validBids.forEach((b) => {
       h += b === 12
         ? `<button class="bidbtn hussybtn" data-act="bid" data-v="12">12 · HOUSEY</button>`
@@ -220,8 +221,32 @@ function renderActionBar(m, g) {
       h += `<button class="trumpbtn${RED.has(s) ? ' red' : ''}" data-act="trump" data-v="${s}" style="${RED.has(s) ? 'color:#c0272d' : ''}">${GLYPH[s]}</button>`;
     });
     if (g.canGoHigh) h += `<button data-act="trump" data-v="HIGH">High<br><small>no trump</small></button>`;
+  } else if (g.phase === 'trading') {
+    const isBidder = mySeat === g.trade.bidder;
+    const isPartner = mySeat === g.trade.partner;
+    
+    if (g.trade.amount === null) {
+      if (isBidder) {
+        h += `<div class="title">How many cards to trade?</div>`;
+        for (let i = 0; i <= 4; i++) h += `<button class="bidbtn" data-act="trade_amt" data-v="${i}">${i}</button>`;
+      } else {
+        h += `<div class="title">Waiting for ${escapeHtml(g.names[g.trade.bidder])} to pick trade size...</div>`;
+      }
+    } else {
+      if (isBidder && !g.trade.bidderReady) {
+        h += `<div class="title">Select ${g.trade.amount} cards to discard face down</div>`;
+        h += `<button class="playbtn" data-act="trade_cards" ${selectedCards.length === g.trade.amount ? '' : 'disabled'}>Confirm Discard</button>`;
+      } else if (isPartner && !g.trade.partnerReady) {
+        h += `<div class="title">Select ${g.trade.amount} cards to pass blindly</div>`;
+        h += `<button class="playbtn" data-act="trade_cards" ${selectedCards.length === g.trade.amount ? '' : 'disabled'}>Confirm Pass</button>`;
+      } else if (isBidder || isPartner) {
+        h += `<div class="title">Waiting for partner to confirm trade...</div>`;
+      } else {
+        h += `<div class="title">Trading in progress...</div>`;
+      }
+    }
   } else if (g.phase === 'playing' && g.turn === mySeat) {
-    h += `<button class="playbtn" data-act="play" ${selectedCard ? '' : 'disabled'}>Play card</button>`;
+    h += `<button class="playbtn" data-act="play" ${selectedCards.length === 1 ? '' : 'disabled'}>Play card</button>`;
   } else if (g.phase === 'handEnd') {
     h += `<button class="primary" data-act="next" style="width:auto">Next hand →</button>`;
   } else if (g.phase === 'gameOver' && isHost) {
@@ -230,11 +255,13 @@ function renderActionBar(m, g) {
   bar.innerHTML = h;
 }
 
-function renderHand(m, g) {
+function renderHand(g) {
   const el = $('hand');
-  if (selectedCard && !g.hand.some((c) => c.id === selectedCard)) selectedCard = null;
+  if (selectedCards.length > 0) {
+    selectedCards = selectedCards.filter(id => g.hand.some(c => c.id === id));
+  }
   el.innerHTML = g.hand.map((c) =>
-    cardHTML(c, false).replace('class="card', `class="card${c.id === selectedCard ? ' sel' : ''}`)
+    cardHTML(c, false).replace('class="card', `class="card${selectedCards.includes(c.id) ? ' sel' : ''}`)
   ).join('');
 }
 
@@ -243,11 +270,21 @@ $('hand').addEventListener('click', (e) => {
   const cd = e.target.closest('.card');
   if (!cd) return;
   const id = cd.dataset.id;
-  selectedCard = selectedCard === id ? null : id;
-  document.querySelectorAll('#hand .card').forEach((el) =>
-    el.classList.toggle('sel', el.dataset.id === selectedCard));
-  const pb = document.querySelector('#actionbar [data-act="play"]');
-  if (pb) pb.disabled = !selectedCard;
+  const g = currentGame;
+
+  if (g && g.phase === 'trading' && g.trade && g.trade.amount > 0) {
+    const idx = selectedCards.indexOf(id);
+    if (idx >= 0) selectedCards.splice(idx, 1);
+    else {
+      selectedCards.push(id);
+      if (selectedCards.length > g.trade.amount) selectedCards.shift();
+    }
+  } else {
+    selectedCards = selectedCards[0] === id ? [] : [id];
+  }
+  
+  renderHand(g);
+  renderActionBar(g);
 });
 
 $('actionbar').addEventListener('click', (e) => {
@@ -257,15 +294,16 @@ $('actionbar').addEventListener('click', (e) => {
   if (act === 'bid') send({ t: 'bid', amount: Number(b.dataset.v) });
   else if (act === 'pass') send({ t: 'pass' });
   else if (act === 'trump') send({ t: 'trump', trump: b.dataset.v });
-  else if (act === 'play' && selectedCard) { send({ t: 'play', card: selectedCard }); selectedCard = null; }
+  else if (act === 'trade_amt') { send({ t: 'trade_amount', amount: Number(b.dataset.v) }); selectedCards = []; }
+  else if (act === 'trade_cards') { send({ t: 'trade_cards', cards: selectedCards }); selectedCards = []; }
+  else if (act === 'play' && selectedCards.length === 1) { send({ t: 'play', card: selectedCards[0] }); selectedCards = []; }
   else if (act === 'next') send({ t: 'next' });
   else if (act === 'rematch') send({ t: 'rematch' });
 });
 
 $('btn-host').addEventListener('click', () => {
   const n = $('name').value.trim();
-  if (!n) { $('home-err').textContent = 'Enter your name first'; return; }
-  $('home-err').textContent = '';
+  if (!n) { $('home-err').textContent = 'Enter your name first'; return; }$('home-err').textContent = '';
   myName = n;
   send({ t: 'create', name: n });
 });
@@ -273,14 +311,12 @@ $('btn-join').addEventListener('click', () => {
   const n = $('name').value.trim();
   const c = $('code').value.trim().toUpperCase();
   if (!n) { $('home-err').textContent = 'Enter your name first'; return; }
-  if (c.length !== 4) { $('home-err').textContent = 'Enter the 4-letter room code'; return; }
-  $('home-err').textContent = '';
+  if (c.length !== 4) { $('home-err').textContent = 'Enter the 4-letter room code'; return; }$('home-err').textContent = '';
   myName = n;
   send({ t: 'join', code: c, name: n });
 });
 $('btn-start').addEventListener('click', () => send({ t: 'start' }));
-$('btn-leave-lobby').addEventListener('click', () => send({ t: 'leave' }));
-$('lobby-players').addEventListener('click', (e) => {
+$('btn-leave-lobby').addEventListener('click', () => send({ t: 'leave' }));$('lobby-players').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-lobby]');
   if (!b) return;
   send({ t: b.dataset.lobby, seat: Number(b.dataset.seat) });
