@@ -153,7 +153,7 @@ function renderGame(m) {
   $('bidlog').innerHTML = g.bidLog.length
     ? 'Bids: ' + g.bidLog.map((e) =>
         e.bid === 'pass' ? `${escapeHtml(e.name)} pass`
-        : e.bid === 12 ? `<span class="hussy">${escapeHtml(e.name)} HUSSY</span>`
+        : e.bid === 12 ? `<span class="hussy">${escapeHtml(e.name)} HOUSEY</span>`
         : `${escapeHtml(e.name)} ${e.bid}`).join(' · ')
     : '';
 
