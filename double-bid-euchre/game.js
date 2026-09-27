@@ -289,13 +289,23 @@ class Game {
     const makers = teamOf(b), defenders = 1 - makers;
     const mt = this.tricksWon[makers], dt = this.tricksWon[defenders];
     let detail;
-    if (this.contract.hussy) {
-      if (mt === TRICKS_PER_HAND) {
-        this.scores[makers] += 24;
-        detail = `HOUSEY MADE! +24`;
+   if (this.contract.hussy) {
+      if (this.contract.bigHousey) {
+        if (mt === TRICKS_PER_HAND) {
+          this.scores[makers] += 48;
+          detail = `BIG HOUSEY MADE! +48`;
+        } else {
+          this.scores[makers] -= 24;
+          detail = `BIG HOUSEY set! −24`;
+        }
       } else {
-        this.scores[makers] -= 12;
-        detail = `HOUSEY set! −12`;
+        if (mt === TRICKS_PER_HAND) {
+          this.scores[makers] += 24;
+          detail = `HOUSEY MADE! +24`;
+        } else {
+          this.scores[makers] -= 12;
+          detail = `HOUSEY set! −12`;
+        }
       }
       this.scores[defenders] += dt;
     } else {
