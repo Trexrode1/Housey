@@ -362,7 +362,6 @@ contract: c
             makers: teamOf(c.bidder),
           }
         : null,
-        : null,
       trade: this.phase === 'trading' && this.trade ? {
         amount: this.trade.amount,
         bidder: this.trade.bidder,
