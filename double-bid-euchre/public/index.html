@@ -53,7 +53,9 @@
 
   <!-- GAME -->
   <section id="view-game" class="view hidden">
-    <button onclick="window.location.href='/'" style="position: absolute; top: 15px; left: 15px; padding: 8px 12px; background: #ab2a2a; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; z-index: 1000;">Leave Game</button>
+   <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/';" style="position: absolute; top: 15px; left: 15px; padding: 8px 12px; background: #ab2a2a; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; z-index: 1000;">
+  Leave Game
+</button>
     <div id="scorebar"></div>
     <div id="status"></div>
     <div id="table">
