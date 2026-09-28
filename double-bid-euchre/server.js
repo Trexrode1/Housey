@@ -11,7 +11,7 @@ const bots = require('./bots');
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
 const CODE_ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-const BOT_NAMES = ['Rusty', 'Lucky', 'Dot', 'Ace', 'Chip', 'Pepper'];
+const BOT_NAMES = ['C3PO', 'R2D2', 'BB8', 'Chewie', 'Chip', 'Pepper'];
 
 const rooms = new Map();
 
