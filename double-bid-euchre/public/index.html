@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>HOUSEY</title>
@@ -56,6 +59,7 @@
 
   <!-- GAME -->
   <section id="view-game" class="view hidden">
+    <button id="fullscreen-btn" onclick="toggleFullscreen()" style="width: 100%; background: #2563eb; color: white; padding: 4px; border: none; font-weight: bold; cursor: pointer;">Toggle Fullscreen</button>
     <div id="scorebar"></div>
     <div id="status"></div>
     <div id="table">
