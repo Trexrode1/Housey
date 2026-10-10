@@ -217,3 +217,25 @@ button:disabled { opacity: .4; }
   margin-right: 0;
   margin-top: 0;
 }
+
+@media (max-width: 600px) {
+  #hand {
+    justify-content: center;
+    overflow-x: visible; /* Prevents scrollbar */
+    padding: 10px 4px;
+  }
+
+  #hand .card {
+    width: 42px;         /* Slightly narrower card width */
+    height: 62px;
+    margin-left: -22px;  /* Increases overlap so all 12 fit */
+  }
+
+  #hand .card.small {
+    width: 42px;
+    height: 62px;
+  }
+
+  #hand .card .rank { font-size: 14px; }
+  #hand .card .suit { font-size: 16px; }
+}
