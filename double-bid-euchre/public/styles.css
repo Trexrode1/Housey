@@ -256,38 +256,48 @@ button:disabled { opacity: .4; }
 
 /* Landscape orientation tuning for mobile devices */
 @media screen and (max-width: 950px) and (orientation: landscape) {
-  /* Compress the top UI and Fullscreen button (before it hides) */
-  #fullscreen-btn { padding: 4px !important; font-size: 14px !important; }
-  #scorebar { margin-bottom: 2px !important; padding: 2px !important; font-size: 12px !important; }
-  #status { margin: 2px 0 !important; font-size: 12px !important; }
-  #bidlog { margin-bottom: 0 !important; min-height: 14px !important; font-size: 11px !important; }
+  /* 1. Lock the screen height and prevent scrolling entirely */
+  body, html { overflow: hidden !important; height: 100% !important; margin: 0 !important; }
+  
+  /* 2. Turn the main game view into a perfectly sized vertical column */
+  #view-game {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* Modern mobile height measurement */
+    justify-content: space-between !important;
+  }
 
-  /* Aggressively squish the table's vertical footprint */
+  /* 3. Compress the top UI elements */
+  #fullscreen-btn { padding: 4px !important; font-size: 14px !important; }
+  #scorebar { margin: 0 !important; padding: 2px 10px !important; font-size: 12px !important; }
+  #status { margin: 2px 0 !important; font-size: 12px !important; }
+  #bidlog { margin: 0 !important; font-size: 11px !important; min-height: 14px !important; }
+
+  /* 4. Make the table a flexible space that squishes to fit whatever room is left */
   .table {
-    min-height: 150px !important;
-    height: 150px !important;
-    margin-bottom: 2px !important;
+    flex: 1 1 auto !important; 
+    height: auto !important; 
+    min-height: 80px !important;
+    margin: 0 !important;
   }
   
-  /* Push top and bottom seats to the absolute edges of the table */
+  /* Keep seats tight to the edges of the shrinking table */
   .seat.top { top: 0 !important; }
   .seat.bottom { bottom: 0 !important; }
   .seatinfo { padding: 1px 4px !important; font-size: 10px !important; margin: 1px 0 !important; }
-  
-  /* Shrink played cards */
-  .seat .card { width: 34px !important; height: 50px !important; }
+  .seat .card { width: 32px !important; height: 48px !important; }
 
-  /* Compress the action bar buttons */
-  #actionbar { margin: 2px 0 !important; gap: 4px !important; }
+  /* 5. Tightly pack the action buttons and hand at the absolute bottom */
+  #actionbar { margin: 2px 0 !important; }
   #actionbar button { padding: 2px 8px !important; font-size: 12px !important; min-height: 24px !important; }
   
-  /* Fan the hand out into a single row of slightly smaller cards */
   #hand {
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
-    padding: 0 !important;
-    overflow-x: visible !important;
+    padding: 0 0 5px 0 !important;
+    overflow: visible !important;
   }
   #hand .card {
     width: 36px !important;
