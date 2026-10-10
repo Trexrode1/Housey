@@ -250,47 +250,19 @@ button:disabled { opacity: .4; }
   }
 }
 
-/* Completely hide the fullscreen button when the device is already in fullscreen mode */
-:fullscreen #fullscreen-btn { display: none !important; }
-:-webkit-full-screen #fullscreen-btn { display: none !important; }
-
-/* Landscape orientation tuning for mobile devices */
-@media screen and (max-width: 950px) and (orientation: landscape) {
-  /* 1. Lock the screen height and prevent scrolling entirely */
-  body, html { overflow: hidden !important; height: 100% !important; margin: 0 !important; }
-  
-  /* 2. Turn the main game view into a perfectly sized vertical column */
-  #view-game {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    height: 100dvh !important; /* Modern mobile height measurement */
-    justify-content: space-between !important;
-  }
-
-  /* 3. Compress the top UI elements */
-  #fullscreen-btn { padding: 4px !important; font-size: 14px !important; }
-  #scorebar { margin: 0 !important; padding: 2px 10px !important; font-size: 12px !important; }
-  #status { margin: 2px 0 !important; font-size: 12px !important; }
-  #bidlog { margin: 0 !important; font-size: 11px !important; min-height: 14px !important; }
-
-  /* 4. Make the table a flexible space that squishes to fit whatever room is left */
-  .table {
-    flex: 1 1 auto !important; 
-    height: auto !important; 
-    min-height: 80px !important;
-    margin: 0 !important;
+/* 5. Tightly pack the action buttons and hand at the absolute bottom */
+  #actionbar, #hand {
+    flex-shrink: 0 !important; /* STRICTLY prevents the hand from sliding up over the buttons */
   }
   
-  /* Keep seats tight to the edges of the shrinking table */
-  .seat.top { top: 0 !important; }
-  .seat.bottom { bottom: 0 !important; }
-  .seatinfo { padding: 1px 4px !important; font-size: 10px !important; margin: 1px 0 !important; }
-  .seat .card { width: 32px !important; height: 48px !important; }
-
-  /* 5. Tightly pack the action buttons and hand at the absolute bottom */
   #actionbar { margin: 2px 0 !important; }
-  #actionbar button { padding: 2px 8px !important; font-size: 12px !important; min-height: 24px !important; }
+  
+  /* Shrink the massive "Your bid" and "Current" text headers */
+  #actionbar .title { font-size: 12px !important; margin: 0 !important; line-height: 1 !important; }
+  #actionbar .cur { font-size: 11px !important; margin-bottom: 2px !important; line-height: 1 !important; }
+  
+  /* Make buttons slightly more compact */
+  #actionbar button { padding: 4px 8px !important; font-size: 12px !important; min-height: 24px !important; }
   
   #hand {
     display: flex !important;
@@ -306,4 +278,3 @@ button:disabled { opacity: .4; }
   }
   #hand .card .rank { font-size: 12px !important; line-height: 1 !important; }
   #hand .card .suit { font-size: 13px !important; line-height: 1 !important; }
-}
