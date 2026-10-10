@@ -306,7 +306,7 @@ button:disabled { opacity: .4; }
   
   .seat .played { margin: 0 !important; } 
   .seatinfo { padding: 2px 6px !important; font-size: 10px !important; }
-  .seat .card { width: 32px !important; height: 46px !important; }
+  .seat .card { width: 44px !important; height: 64px !important; }
 
   /* 7. Bottom UI - Bounded and visible */
   #actionbar {
@@ -323,11 +323,11 @@ button:disabled { opacity: .4; }
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
-    padding: 0 0 4px 0 !important;
+    padding: 0 0 6px 0 !important;
     overflow: visible !important;
     z-index: 10;
   }
-  #hand .card { width: 38px !important; height: 56px !important; margin-left: -14px !important; }
-  #hand .card .rank { font-size: 13px !important; }
-  #hand .card .suit { font-size: 14px !important; }
+  #hand .card { width: 54px !important; height: 78px !important; margin-left: -22px !important; }
+  #hand .card .rank { font-size: 18px !important; }
+  #hand .card .suit { font-size: 20px !important; }
 }
