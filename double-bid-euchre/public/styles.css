@@ -250,32 +250,84 @@ button:disabled { opacity: .4; }
   }
 }
 
-/* 1. FIX TEXT OVERLAP: Hide redundant title and tighten status text */
-  #actionbar .title { display: none !important; } /* Hides "Your turn" / "Your bid" */
-  #status { 
-    margin: 2px 0 0 0 !important; 
-    font-size: 11px !important; 
-    line-height: 1.1 !important; 
-    position: relative; 
-    z-index: 20; 
+/* Completely hide the fullscreen button when the device is already in fullscreen mode */
+:fullscreen #fullscreen-btn { display: none !important; }
+:-webkit-full-screen #fullscreen-btn { display: none !important; }
+
+/* Landscape orientation tuning for mobile devices */
+@media screen and (max-width: 950px) and (orientation: landscape) {
+  /* 1. Lock viewport and remove all scrolling */
+  body, html { overflow: hidden !important; height: 100% !important; margin: 0 !important; padding: 0 !important; }
+  
+  /* 2. Flex column bounded EXACTLY to the screen size */
+  #view-game {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* Uses dynamic viewport on modern mobile browsers */
+    justify-content: space-between !important;
+    position: relative !important;
   }
 
-  /* 2. FIX CARD OVERLAP: Make Top & Bottom seats horizontal to save vertical height */
-  .seat.top { 
-    display: flex !important; 
-    flex-direction: row !important; /* Puts played card to the right of R2D2's name */
-    align-items: center !important; 
-    gap: 12px !important; 
+  /* 3. FLOAT the fullscreen button so it steals ZERO vertical height */
+  #fullscreen-btn {
+    position: absolute !important;
+    top: 2px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1000 !important;
+    padding: 4px 14px !important;
+    font-size: 12px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
   }
+
+  /* 4. Compact the Top Text */
+  #scorebar { flex-shrink: 0 !important; margin: 0 !important; padding: 2px 10px !important; font-size: 11px !important; }
+  #status { flex-shrink: 0 !important; margin: 0 !important; font-size: 11px !important; line-height: 1.1 !important; z-index: 20; position: relative; }
+  #bidlog { display: none !important; } /* Hide the tiny redundant bidlog to save space */
+
+  /* 5. The Magic Squish Table */
+  /* flex-basis: 0px forces it to fit available space without pushing bottom elements off screen */
+  .table {
+    flex: 1 1 0px !important; 
+    min-height: 0 !important; 
+    margin: 0 !important;
+    background: transparent !important; /* Hides the inner green box so elements can overlap safely */
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+  }
+
+  /* 6. Fix Card/Text Overlaps in Center (Side-by-side Layout) */
+  .seat.top { top: 0 !important; display: flex !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; }
+  .seat.bottom { bottom: 0 !important; display: flex !important; flex-direction: row-reverse !important; align-items: center !important; gap: 8px !important; }
+  .seat.left { left: 2px !important; }
+  .seat.right { right: 2px !important; }
   
-  .seat.bottom { 
-    display: flex !important; 
-    flex-direction: row-reverse !important; /* Puts played card to the left of the YOU badge */
-    align-items: center !important; 
-    gap: 12px !important; 
+  .seat .played { margin: 0 !important; } 
+  .seatinfo { padding: 2px 6px !important; font-size: 10px !important; }
+  .seat .card { width: 32px !important; height: 46px !important; }
+
+  /* 7. Bottom UI - Bounded and visible */
+  #actionbar {
+    flex-shrink: 0 !important;
+    margin: 2px 0 !important;
+    z-index: 10;
   }
-  
-  /* Remove the old vertical margins from the top and bottom played cards */
-  .seat.top .played, .seat.bottom .played { 
-    margin: 0 !important; 
+  #actionbar .title { display: none !important; } /* Hide 'Your turn' */
+  #actionbar .cur { font-size: 11px !important; margin-bottom: 2px !important; }
+  #actionbar button { padding: 4px 10px !important; font-size: 12px !important; min-height: 28px !important; }
+
+  #hand {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    padding: 0 0 4px 0 !important;
+    overflow: visible !important;
+    z-index: 10;
   }
+  #hand .card { width: 38px !important; height: 56px !important; margin-left: -14px !important; }
+  #hand .card .rank { font-size: 13px !important; }
+  #hand .card .suit { font-size: 14px !important; }
+}
