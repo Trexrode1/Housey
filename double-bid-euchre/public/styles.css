@@ -250,75 +250,32 @@ button:disabled { opacity: .4; }
   }
 }
 
-/* Completely hide the fullscreen button when the device is already in fullscreen mode */
-:fullscreen #fullscreen-btn { display: none !important; }
-:-webkit-full-screen #fullscreen-btn { display: none !important; }
-
-/* Landscape orientation tuning for mobile devices */
-@media screen and (max-width: 950px) and (orientation: landscape) {
-  /* Lock the screen height */
-  body, html { overflow: hidden !important; height: 100% !important; margin: 0 !important; }
-  
-  #view-game {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    justify-content: space-between !important;
+/* 1. FIX TEXT OVERLAP: Hide redundant title and tighten status text */
+  #actionbar .title { display: none !important; } /* Hides "Your turn" / "Your bid" */
+  #status { 
+    margin: 2px 0 0 0 !important; 
+    font-size: 11px !important; 
+    line-height: 1.1 !important; 
+    position: relative; 
+    z-index: 20; 
   }
 
-  /* MAKE THE TABLE INVISIBLE AND FLEXIBLE */
-  .table {
-    flex: 1 1 auto !important; 
-    min-height: 120px !important; 
-    margin: 0 !important;
-    background: transparent !important; 
-    border: none !important;
-    box-shadow: none !important;
+  /* 2. FIX CARD OVERLAP: Make Top & Bottom seats horizontal to save vertical height */
+  .seat.top { 
+    display: flex !important; 
+    flex-direction: row !important; /* Puts played card to the right of R2D2's name */
+    align-items: center !important; 
+    gap: 12px !important; 
   }
   
-  .seat.top { top: 0 !important; }
-  .seat.bottom { bottom: 0 !important; }
-  .seatinfo { padding: 2px 6px !important; font-size: 11px !important; }
-  .seat .card { width: 34px !important; height: 50px !important; }
-
-  /* Compress text elements, keep status VISIBLE */
-  #scorebar { margin: 0 !important; padding: 2px 10px !important; font-size: 12px !important; }
-  #status { margin: 0 !important; font-size: 12px !important; } /* Restored visibility for trump & tricks */
-  #bidlog { margin: 0 !important; font-size: 12px !important; min-height: 14px !important; }
-
-  /* BIGGER, MORE READABLE BUTTONS */
-  #actionbar {
-    flex-shrink: 0 !important;
-    margin: 2px 0 !important;
-    position: relative;
-    z-index: 10;
-  }
-  #actionbar .title { font-size: 13px !important; margin: 0 !important; }
-  #actionbar .cur { font-size: 12px !important; margin-bottom: 2px !important; }
-  
-  #actionbar button { 
-    padding: 6px 14px !important; 
-    font-size: 14px !important; 
-    min-height: 32px !important; 
+  .seat.bottom { 
+    display: flex !important; 
+    flex-direction: row-reverse !important; /* Puts played card to the left of the YOU badge */
+    align-items: center !important; 
+    gap: 12px !important; 
   }
   
-  /* MUCH LARGER HAND CARDS, SPREAD FURTHER APART */
-  #hand {
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    justify-content: center !important;
-    padding: 0 0 5px 0 !important;
-    overflow: visible !important;
-    position: relative;
-    z-index: 10;
+  /* Remove the old vertical margins from the top and bottom played cards */
+  .seat.top .played, .seat.bottom .played { 
+    margin: 0 !important; 
   }
-  #hand .card {
-    width: 44px !important;  
-    height: 64px !important; 
-    margin-left: -14px !important; /* Spread the cards further apart */
-  }
-  #hand .card .rank { font-size: 15px !important; line-height: 1 !important; }
-  #hand .card .suit { font-size: 16px !important; line-height: 1 !important; }
-}
