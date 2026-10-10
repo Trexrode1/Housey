@@ -267,12 +267,12 @@ button:disabled { opacity: .4; }
     justify-content: space-between !important;
   }
 
-  /* 1. MAKE THE TABLE INVISIBLE AND FLEXIBLE */
+  /* MAKE THE TABLE INVISIBLE AND FLEXIBLE */
   .table {
     flex: 1 1 auto !important; 
-    min-height: 120px !important; /* Just enough room so top/bottom bots don't overlap */
+    min-height: 120px !important; 
     margin: 0 !important;
-    background: transparent !important; /* Hides the inner green box */
+    background: transparent !important; 
     border: none !important;
     box-shadow: none !important;
   }
@@ -282,12 +282,12 @@ button:disabled { opacity: .4; }
   .seatinfo { padding: 2px 6px !important; font-size: 11px !important; }
   .seat .card { width: 34px !important; height: 50px !important; }
 
-  /* Compress the text elements slightly to save room */
+  /* Compress text elements, keep status VISIBLE */
   #scorebar { margin: 0 !important; padding: 2px 10px !important; font-size: 12px !important; }
-  #status { margin: 0 !important; font-size: 12px !important; display: none; } /* Hide redundant status */
+  #status { margin: 0 !important; font-size: 12px !important; } /* Restored visibility for trump & tricks */
   #bidlog { margin: 0 !important; font-size: 12px !important; min-height: 14px !important; }
 
-  /* 2. BIGGER, MORE READABLE BUTTONS */
+  /* BIGGER, MORE READABLE BUTTONS */
   #actionbar {
     flex-shrink: 0 !important;
     margin: 2px 0 !important;
@@ -298,12 +298,12 @@ button:disabled { opacity: .4; }
   #actionbar .cur { font-size: 12px !important; margin-bottom: 2px !important; }
   
   #actionbar button { 
-    padding: 6px 14px !important; /* Nice, large tappable area */
+    padding: 6px 14px !important; 
     font-size: 14px !important; 
     min-height: 32px !important; 
   }
   
-  /* 3. MUCH LARGER HAND CARDS */
+  /* MUCH LARGER HAND CARDS, SPREAD FURTHER APART */
   #hand {
     flex-shrink: 0 !important;
     display: flex !important;
@@ -315,9 +315,9 @@ button:disabled { opacity: .4; }
     z-index: 10;
   }
   #hand .card {
-    width: 44px !important;  /* Vastly wider cards */
-    height: 64px !important; /* Vastly taller cards */
-    margin-left: -20px !important; /* Overlapped slightly more so all 12 still fit on screen */
+    width: 44px !important;  
+    height: 64px !important; 
+    margin-left: -14px !important; /* Spread the cards further apart */
   }
   #hand .card .rank { font-size: 15px !important; line-height: 1 !important; }
   #hand .card .suit { font-size: 16px !important; line-height: 1 !important; }
