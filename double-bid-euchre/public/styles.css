@@ -220,22 +220,32 @@ button:disabled { opacity: .4; }
 
 @media (max-width: 600px) {
   #hand {
+    display: flex;
+    flex-wrap: wrap;       /* Wraps 12 cards into 2 rows of 6 */
     justify-content: center;
-    overflow-x: visible; /* Prevents scrollbar */
-    padding: 10px 4px;
+    max-width: 100%;
+    padding: 6px 2px;
+    gap: 4px;              /* Clean spacing between cards */
   }
 
   #hand .card {
-    width: 42px;         /* Slightly narrower card width */
-    height: 62px;
-    margin-left: -22px;  /* Increases overlap so all 12 fit */
+    width: 50px !important;  /* Fits 6 cards across easily on mobile screen width */
+    height: 72px !important;
+    margin-left: 0 !important; /* Removes negative margin stack */
   }
 
   #hand .card.small {
-    width: 42px;
-    height: 62px;
+    width: 50px !important;
+    height: 72px !important;
   }
 
-  #hand .card .rank { font-size: 14px; }
-  #hand .card .suit { font-size: 16px; }
+  #hand .card .rank {
+    font-size: 16px !important;
+    line-height: 1 !important;
+  }
+
+  #hand .card .suit {
+    font-size: 18px !important;
+    line-height: 1.1 !important;
+  }
 }
