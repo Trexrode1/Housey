@@ -249,3 +249,29 @@ button:disabled { opacity: .4; }
     line-height: 1.1 !important;
   }
 }
+
+@media screen and (max-width: 950px) and (orientation: landscape) {
+  .table {
+    min-height: 220px !important;
+    height: 220px !important;
+    margin-bottom: 5px;
+  }
+  .seatinfo { padding: 2px 6px !important; font-size: 11px !important; }
+  .seat .card { width: 38px !important; height: 56px !important; }
+  
+  #hand {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    padding: 2px 0 !important;
+    overflow-x: visible !important;
+  }
+  #hand .card {
+    width: 38px !important;
+    height: 56px !important;
+    margin-left: -12px !important; 
+  }
+  #hand .card .rank { font-size: 13px !important; }
+  #hand .card .suit { font-size: 14px !important; }
+  #actionbar button { padding: 4px 10px !important; font-size: 13px !important; }
+}
