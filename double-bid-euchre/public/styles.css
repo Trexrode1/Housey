@@ -250,31 +250,75 @@ button:disabled { opacity: .4; }
   }
 }
 
-/* 5. Tightly pack the action buttons and hand at the absolute bottom */
-  #actionbar, #hand {
-    flex-shrink: 0 !important; /* STRICTLY prevents the hand from sliding up over the buttons */
+/* Completely hide the fullscreen button when the device is already in fullscreen mode */
+:fullscreen #fullscreen-btn { display: none !important; }
+:-webkit-full-screen #fullscreen-btn { display: none !important; }
+
+/* Landscape orientation tuning for mobile devices */
+@media screen and (max-width: 950px) and (orientation: landscape) {
+  /* Lock the screen height */
+  body, html { overflow: hidden !important; height: 100% !important; margin: 0 !important; }
+  
+  #view-game {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    justify-content: space-between !important;
+  }
+
+  /* 1. MAKE THE TABLE INVISIBLE AND FLEXIBLE */
+  .table {
+    flex: 1 1 auto !important; 
+    min-height: 120px !important; /* Just enough room so top/bottom bots don't overlap */
+    margin: 0 !important;
+    background: transparent !important; /* Hides the inner green box */
+    border: none !important;
+    box-shadow: none !important;
   }
   
-  #actionbar { margin: 2px 0 !important; }
+  .seat.top { top: 0 !important; }
+  .seat.bottom { bottom: 0 !important; }
+  .seatinfo { padding: 2px 6px !important; font-size: 11px !important; }
+  .seat .card { width: 34px !important; height: 50px !important; }
+
+  /* Compress the text elements slightly to save room */
+  #scorebar { margin: 0 !important; padding: 2px 10px !important; font-size: 12px !important; }
+  #status { margin: 0 !important; font-size: 12px !important; display: none; } /* Hide redundant status */
+  #bidlog { margin: 0 !important; font-size: 12px !important; min-height: 14px !important; }
+
+  /* 2. BIGGER, MORE READABLE BUTTONS */
+  #actionbar {
+    flex-shrink: 0 !important;
+    margin: 2px 0 !important;
+    position: relative;
+    z-index: 10;
+  }
+  #actionbar .title { font-size: 13px !important; margin: 0 !important; }
+  #actionbar .cur { font-size: 12px !important; margin-bottom: 2px !important; }
   
-  /* Shrink the massive "Your bid" and "Current" text headers */
-  #actionbar .title { font-size: 12px !important; margin: 0 !important; line-height: 1 !important; }
-  #actionbar .cur { font-size: 11px !important; margin-bottom: 2px !important; line-height: 1 !important; }
+  #actionbar button { 
+    padding: 6px 14px !important; /* Nice, large tappable area */
+    font-size: 14px !important; 
+    min-height: 32px !important; 
+  }
   
-  /* Make buttons slightly more compact */
-  #actionbar button { padding: 4px 8px !important; font-size: 12px !important; min-height: 24px !important; }
-  
+  /* 3. MUCH LARGER HAND CARDS */
   #hand {
+    flex-shrink: 0 !important;
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     padding: 0 0 5px 0 !important;
     overflow: visible !important;
+    position: relative;
+    z-index: 10;
   }
   #hand .card {
-    width: 36px !important;
-    height: 52px !important;
-    margin-left: -14px !important; 
+    width: 44px !important;  /* Vastly wider cards */
+    height: 64px !important; /* Vastly taller cards */
+    margin-left: -20px !important; /* Overlapped slightly more so all 12 still fit on screen */
   }
-  #hand .card .rank { font-size: 12px !important; line-height: 1 !important; }
-  #hand .card .suit { font-size: 13px !important; line-height: 1 !important; }
+  #hand .card .rank { font-size: 15px !important; line-height: 1 !important; }
+  #hand .card .suit { font-size: 16px !important; line-height: 1 !important; }
+}
