@@ -250,28 +250,50 @@ button:disabled { opacity: .4; }
   }
 }
 
+/* Completely hide the fullscreen button when the device is already in fullscreen mode */
+:fullscreen #fullscreen-btn { display: none !important; }
+:-webkit-full-screen #fullscreen-btn { display: none !important; }
+
+/* Landscape orientation tuning for mobile devices */
 @media screen and (max-width: 950px) and (orientation: landscape) {
+  /* Compress the top UI and Fullscreen button (before it hides) */
+  #fullscreen-btn { padding: 4px !important; font-size: 14px !important; }
+  #scorebar { margin-bottom: 2px !important; padding: 2px !important; font-size: 12px !important; }
+  #status { margin: 2px 0 !important; font-size: 12px !important; }
+  #bidlog { margin-bottom: 0 !important; min-height: 14px !important; font-size: 11px !important; }
+
+  /* Aggressively squish the table's vertical footprint */
   .table {
-    min-height: 220px !important;
-    height: 220px !important;
-    margin-bottom: 5px;
+    min-height: 150px !important;
+    height: 150px !important;
+    margin-bottom: 2px !important;
   }
-  .seatinfo { padding: 2px 6px !important; font-size: 11px !important; }
-  .seat .card { width: 38px !important; height: 56px !important; }
   
+  /* Push top and bottom seats to the absolute edges of the table */
+  .seat.top { top: 0 !important; }
+  .seat.bottom { bottom: 0 !important; }
+  .seatinfo { padding: 1px 4px !important; font-size: 10px !important; margin: 1px 0 !important; }
+  
+  /* Shrink played cards */
+  .seat .card { width: 34px !important; height: 50px !important; }
+
+  /* Compress the action bar buttons */
+  #actionbar { margin: 2px 0 !important; gap: 4px !important; }
+  #actionbar button { padding: 2px 8px !important; font-size: 12px !important; min-height: 24px !important; }
+  
+  /* Fan the hand out into a single row of slightly smaller cards */
   #hand {
     display: flex !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
-    padding: 2px 0 !important;
+    padding: 0 !important;
     overflow-x: visible !important;
   }
   #hand .card {
-    width: 38px !important;
-    height: 56px !important;
-    margin-left: -12px !important; 
+    width: 36px !important;
+    height: 52px !important;
+    margin-left: -14px !important; 
   }
-  #hand .card .rank { font-size: 13px !important; }
-  #hand .card .suit { font-size: 14px !important; }
-  #actionbar button { padding: 4px 10px !important; font-size: 13px !important; }
+  #hand .card .rank { font-size: 12px !important; line-height: 1 !important; }
+  #hand .card .suit { font-size: 13px !important; line-height: 1 !important; }
 }
