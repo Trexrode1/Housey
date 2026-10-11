@@ -322,7 +322,10 @@ $('btn-join').addEventListener('click', () => {
   document.getElementById('current-code-text').textContent = c;
   send({ t: 'join', code: c, name: n });
 });
-$('btn-start').addEventListener('click', () => send({ t: 'start' }));
+$('btn-start').addEventListener('click', () => {
+  document.getElementById('current-code-text').textContent = $('lobby-code').textContent;
+  send({ t: 'start' });
+});
 $('btn-leave-lobby').addEventListener('click', () => send({ t: 'leave' }));$('lobby-players').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-lobby]');
   if (!b) return;
