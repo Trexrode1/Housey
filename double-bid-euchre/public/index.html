@@ -60,7 +60,11 @@
   <!-- GAME -->
   <section id="view-game" class="view hidden">
     <button id="fullscreen-btn" onclick="toggleFullscreen()" style="width: 100%; background: #2563eb; color: white; padding: 4px; border: none; font-weight: bold; cursor: pointer;">Toggle Fullscreen</button>
-    <div id="scorebar"></div>
+  <div id="scorebar">
+  <span id="game-code-display" onclick="copyGameCode()" title="Click to copy" style="cursor: pointer; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; font-weight: bold; margin-left: 8px;">
+    Code: <strong id="current-code-text">----</strong> 📋
+  </span>
+</div>
     <div id="status"></div>
     <div id="table">
       <div class="seat top"><div class="seatinfo" id="seat-top"></div><div class="played" id="played-top"></div></div>
