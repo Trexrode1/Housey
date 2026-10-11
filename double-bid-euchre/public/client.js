@@ -312,14 +312,14 @@ $('btn-host').addEventListener('click', () => {
   myName = n;
   send({ t: 'create', name: n });
 });
-$('#btn-join').addEventListener('click', () => {
-  const n = $('#name').value.trim();
-  const c = $('#code').value.trim().toUpperCase();
-  if (!n) { $('#home-err').textContent = 'Enter your name first'; return; }
-  if (c.length !== 4) { $('#home-err').textContent = 'Enter the 4-letter room code'; return; }
-  $('#home-err').textContent = '';
+$('btn-join').addEventListener('click', () => {
+  const n = $('name').value.trim();
+  const c = $('code').value.trim().toUpperCase();
+  if (!n) { $('home-err').textContent = 'Enter your name first'; return; }
+  if (c.length !== 4) { $('home-err').textContent = 'Enter the 4-letter room code'; return; }
+  $('home-err').textContent = '';
   myName = n;
-  $('#current-code-text').textContent = c;
+  document.getElementById('current-code-text').textContent = c;
   send({ t: 'join', code: c, name: n });
 });
 $('btn-start').addEventListener('click', () => send({ t: 'start' }));
